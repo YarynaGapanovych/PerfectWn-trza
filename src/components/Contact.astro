@@ -1,4 +1,6 @@
 ---
+import Select from './Select.astro';
+
 // TODO: replace the placeholder e-mail with the real one.
 const contact = {
 	phone: '+48 791 567 011',
@@ -54,16 +56,11 @@ const contact = {
 				<span>E-mail</span>
 				<input type="email" name="email" autocomplete="email" required />
 			</label>
-			<label>
-				<span>Rodzaj prac</span>
-				<select name="service">
-					<option>Wykończenie pod klucz</option>
-					<option>Malowanie i podłogi</option>
-					<option>Remont / modernizacja</option>
-					<option>Łazienka lub kuchnia</option>
-					<option>Inne</option>
-				</select>
-			</label>
+			<Select
+				name="service"
+				label="Rodzaj prac"
+				options={['Wykończenie pod klucz', 'Malowanie i podłogi', 'Remont / modernizacja', 'Łazienka lub kuchnia', 'Zabudowy i stolarka', 'Inne']}
+			/>
 			<label>
 				<span>Wiadomość</span>
 				<textarea name="message" rows="5" placeholder="Metraż, lokalizacja, oczekiwany termin…"></textarea>

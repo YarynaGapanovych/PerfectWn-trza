@@ -31,7 +31,18 @@ const {
 		/>
 		<title>{title}</title>
 	</head>
-	<body>
+	<body id="top">
 		<slot />
+		<script>
+			// "Do góry" and logo links: always scroll to the very top, even when
+			// the address already ends in #top (a plain anchor would do nothing then).
+			document.querySelectorAll<HTMLAnchorElement>('a[href="#top"]').forEach((link) =>
+				link.addEventListener('click', (event) => {
+					event.preventDefault();
+					window.scrollTo({ top: 0, behavior: 'smooth' });
+					history.replaceState(null, '', location.pathname + location.search);
+				}),
+			);
+		</script>
 	</body>
 </html>
