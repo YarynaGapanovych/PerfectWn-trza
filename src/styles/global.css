@@ -1,0 +1,141 @@
+:root {
+	/* Brand palette (from the PerfectWnętrza logo sheet) */
+	--charcoal: #2b2b2b;
+	--bronze: #a4896a;
+	--bronze-dark: #86704f;
+	--stone: #77746f;
+	--silver: #bebebc;
+	--mist: #e4e4e1;
+	--ivory: #f2f1ed;
+	--cream: #fbf8f0;
+
+	--bg: var(--ivory);
+	--surface: #ffffff;
+	--ink: var(--charcoal);
+	--muted: var(--stone);
+	--line: #dcdad5;
+	--accent: var(--bronze);
+	--accent-dark: var(--bronze-dark);
+	--dark: var(--charcoal);
+
+	--font-serif: 'Montserrat', system-ui, sans-serif;
+	--font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+	--container: 1180px;
+	--radius: 4px;
+}
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	scroll-behavior: smooth;
+	scroll-padding-top: 80px;
+}
+
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--ink);
+	font-family: var(--font-sans);
+	font-size: 16px;
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3 {
+	font-family: var(--font-serif);
+	font-weight: 300;
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	margin: 0;
+}
+
+p {
+	margin: 0;
+}
+
+a {
+	color: inherit;
+}
+
+img {
+	max-width: 100%;
+	display: block;
+}
+
+.container {
+	width: 100%;
+	max-width: var(--container);
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.section {
+	padding: 112px 0;
+}
+
+.eyebrow {
+	display: inline-block;
+	font-size: 12px;
+	letter-spacing: 0.2em;
+	text-transform: uppercase;
+	color: var(--accent);
+	margin-bottom: 16px;
+	font-weight: 500;
+}
+
+.section-title {
+	font-size: clamp(30px, 4.2vw, 46px);
+}
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 15px 30px;
+	font-family: var(--font-sans);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	text-decoration: none;
+	border: 1px solid var(--ink);
+	border-radius: var(--radius);
+	cursor: pointer;
+	transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary {
+	background: var(--ink);
+	color: var(--bg);
+}
+
+.btn-primary:hover {
+	background: var(--accent-dark);
+	border-color: var(--accent-dark);
+}
+
+.btn-ghost {
+	background: transparent;
+	color: var(--ink);
+}
+
+.btn-ghost:hover {
+	background: var(--ink);
+	color: var(--bg);
+}
+
+@media (max-width: 720px) {
+	.section {
+		padding: 80px 0;
+	}
+	.container {
+		padding: 0 16px;
+	}
+}

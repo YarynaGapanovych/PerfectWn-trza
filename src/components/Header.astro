@@ -1,0 +1,164 @@
+---
+const links = [
+	{ href: '#uslugi', label: 'Usługi' },
+	{ href: '#kontakt', label: 'Kontakt' },
+];
+---
+
+<header class="header" id="top">
+	<div class="container header-inner">
+		<a href="#top" class="logo" aria-label="PerfectWnętrza — strona główna">
+			<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" />
+		</a>
+
+		<button class="menu-toggle" aria-label="Otwórz menu" aria-expanded="false" aria-controls="main-nav">
+			<span></span><span></span>
+		</button>
+
+		<nav class="nav" id="main-nav">
+			{links.map((l) => <a href={l.href}>{l.label}</a>)}
+			<a href="#kontakt" class="btn btn-primary nav-cta">Bezpłatna wycena</a>
+		</nav>
+	</div>
+</header>
+
+<script>
+	const header = document.querySelector('.header');
+	const toggle = document.querySelector('.menu-toggle');
+	const nav = document.querySelector('.nav');
+
+	toggle?.addEventListener('click', () => {
+		const open = header?.classList.toggle('is-open') ?? false;
+		toggle.setAttribute('aria-expanded', String(open));
+	});
+
+	nav?.querySelectorAll('a').forEach((a) =>
+		a.addEventListener('click', () => {
+			header?.classList.remove('is-open');
+			toggle?.setAttribute('aria-expanded', 'false');
+		}),
+	);
+
+	const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 10);
+	window.addEventListener('scroll', onScroll, { passive: true });
+	onScroll();
+</script>
+
+<style>
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 50;
+		background: var(--charcoal);
+		transition: box-shadow 0.2s;
+	}
+	.header.is-scrolled {
+		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+	}
+	.header-inner {
+		height: 80px;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+	}
+	.logo {
+		display: block;
+	}
+	.logo img {
+		height: 46px;
+		width: auto;
+	}
+	.nav {
+		display: flex;
+		align-items: center;
+		gap: 36px;
+	}
+	.nav a:not(.btn) {
+		font-size: 14px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--silver);
+		transition: color 0.2s;
+	}
+	.nav a:not(.btn):hover {
+		color: var(--cream);
+	}
+	.nav-cta {
+		padding: 11px 20px;
+		background: var(--bronze);
+		border-color: var(--bronze);
+		color: #fff;
+	}
+	.nav-cta:hover {
+		background: var(--bronze-dark);
+		border-color: var(--bronze-dark);
+	}
+	.menu-toggle {
+		display: none;
+		width: 40px;
+		height: 40px;
+		background: none;
+		border: 0;
+		cursor: pointer;
+		position: relative;
+	}
+	.menu-toggle span {
+		position: absolute;
+		left: 9px;
+		right: 9px;
+		height: 1.5px;
+		background: var(--cream);
+		transition: transform 0.25s, top 0.25s;
+	}
+	.menu-toggle span:first-child {
+		top: 15px;
+	}
+	.menu-toggle span:last-child {
+		top: 24px;
+	}
+
+	@media (max-width: 760px) {
+		.menu-toggle {
+			display: block;
+		}
+		.nav {
+			position: absolute;
+			top: 72px;
+			left: 0;
+			right: 0;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+			padding: 8px 16px 24px;
+			background: var(--charcoal);
+			border-top: 1px solid rgba(255, 255, 255, 0.08);
+			display: none;
+		}
+		.nav a:not(.btn) {
+			padding: 16px 0;
+			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+		}
+		.header-inner {
+			height: 72px;
+		}
+		.logo img {
+			height: 38px;
+		}
+		.nav-cta {
+			margin-top: 20px;
+			justify-content: center;
+		}
+		.header.is-open .nav {
+			display: flex;
+		}
+		.header.is-open .menu-toggle span:first-child {
+			top: 19px;
+			transform: rotate(45deg);
+		}
+		.header.is-open .menu-toggle span:last-child {
+			top: 19px;
+			transform: rotate(-45deg);
+		}
+	}
+</style>

@@ -1,0 +1,179 @@
+---
+// TODO: replace the placeholder e-mail with the real one.
+const contact = {
+	phone: '+48 791 567 011',
+	email: 'kontakt@example.com',
+	address: 'Kraków i okolice',
+	hours: 'Pon–Pt 8:00–18:00',
+};
+---
+
+<section class="section contact" id="kontakt">
+	<div class="container grid">
+		<div class="info">
+			<span class="eyebrow">Kontakt</span>
+			<h2 class="section-title">Porozmawiajmy o Twoim wnętrzu</h2>
+			<p class="intro">
+				Opisz krótko swój projekt — odezwiemy się w ciągu 24 godzin i umówimy bezpłatną
+				konsultację oraz wycenę.
+			</p>
+
+			<dl class="details">
+				<div>
+					<dt>Telefon</dt>
+					<dd><a href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a></dd>
+				</div>
+				<div>
+					<dt>E-mail</dt>
+					<dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+				</div>
+				<div>
+					<dt>Adres</dt>
+					<dd>{contact.address}</dd>
+				</div>
+				<div>
+					<dt>Godziny</dt>
+					<dd>{contact.hours}</dd>
+				</div>
+			</dl>
+		</div>
+
+		<!-- TODO: connect the form to a backend or form service (e.g. Formspree, Netlify Forms). -->
+		<form class="form" method="post" action="#">
+			<div class="row">
+				<label>
+					<span>Imię i nazwisko</span>
+					<input type="text" name="name" autocomplete="name" required />
+				</label>
+				<label>
+					<span>Telefon</span>
+					<input type="tel" name="phone" autocomplete="tel" />
+				</label>
+			</div>
+			<label>
+				<span>E-mail</span>
+				<input type="email" name="email" autocomplete="email" required />
+			</label>
+			<label>
+				<span>Rodzaj prac</span>
+				<select name="service">
+					<option>Wykończenie pod klucz</option>
+					<option>Projekt wnętrza</option>
+					<option>Remont / modernizacja</option>
+					<option>Łazienka lub kuchnia</option>
+					<option>Inne</option>
+				</select>
+			</label>
+			<label>
+				<span>Wiadomość</span>
+				<textarea name="message" rows="5" placeholder="Metraż, lokalizacja, oczekiwany termin…"></textarea>
+			</label>
+			<button type="submit" class="btn btn-primary">Wyślij zapytanie</button>
+		</form>
+	</div>
+</section>
+
+<style>
+	.grid {
+		display: grid;
+		grid-template-columns: 1fr 1.1fr;
+		gap: 80px;
+		align-items: start;
+	}
+	.intro {
+		margin-top: 24px;
+		color: var(--muted);
+		font-weight: 300;
+		font-size: 17px;
+		max-width: 440px;
+	}
+	.details {
+		margin: 48px 0 0;
+		display: grid;
+		gap: 24px;
+	}
+	.details dt {
+		font-size: 12px;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.details dd {
+		margin: 4px 0 0;
+		font-family: var(--font-serif);
+		font-size: 19px;
+	}
+	.details a {
+		text-decoration: none;
+	}
+	.details a:hover {
+		color: var(--accent);
+	}
+
+	.form {
+		background: var(--surface);
+		padding: 48px;
+		border-radius: var(--radius);
+		display: grid;
+		gap: 22px;
+	}
+	.row {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 22px;
+	}
+	label {
+		display: grid;
+		gap: 8px;
+	}
+	label span {
+		font-size: 13px;
+		color: var(--muted);
+	}
+	input,
+	select,
+	textarea {
+		width: 100%;
+		font: inherit;
+		font-size: 15px;
+		color: var(--ink);
+		background: transparent;
+		border: 0;
+		border-bottom: 1px solid var(--line);
+		padding: 10px 0;
+		border-radius: 0;
+		transition: border-color 0.2s;
+	}
+	textarea {
+		resize: vertical;
+	}
+	input:focus,
+	select:focus,
+	textarea:focus {
+		outline: none;
+		border-bottom-color: var(--accent);
+	}
+	.form .btn {
+		justify-self: start;
+		margin-top: 8px;
+	}
+
+	@media (max-width: 900px) {
+		.grid {
+			grid-template-columns: 1fr;
+			gap: 48px;
+		}
+	}
+	@media (max-width: 520px) {
+		.form {
+			padding: 28px 20px;
+		}
+		.row {
+			grid-template-columns: 1fr;
+		}
+		.form .btn {
+			justify-self: stretch;
+			justify-content: center;
+		}
+	}
+</style>

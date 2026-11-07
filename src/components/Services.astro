@@ -1,0 +1,128 @@
+---
+const services = [
+	{
+		title: 'Projekt wnętrza',
+		text: 'Koncepcja, wizualizacje 3D i dokumentacja wykonawcza dopasowana do Twojego stylu i budżetu.',
+	},
+	{
+		title: 'Wykończenia pod klucz',
+		text: 'Kompleksowa realizacja: od gładzi i podłóg, przez łazienki, po montaż oświetlenia i drzwi.',
+	},
+	{
+		title: 'Remonty i modernizacje',
+		text: 'Odświeżenie lub pełna przebudowa mieszkania, domu czy lokalu użytkowego — bez niespodzianek.',
+	},
+	{
+		title: 'Łazienki i kuchnie',
+		text: 'Precyzyjne prace glazurnicze, zabudowy na wymiar oraz instalacje wykonane zgodnie ze sztuką.',
+	},
+	{
+		title: 'Zabudowy i stolarka',
+		text: 'Meble na wymiar, garderoby, sufity podwieszane i ściany z płyt g-k idealnie wpasowane w przestrzeń.',
+	},
+	{
+		title: 'Nadzór i koordynacja',
+		text: 'Jeden opiekun projektu, jasny harmonogram i stały kontakt na każdym etapie prac.',
+	},
+];
+---
+
+<section class="section services" id="uslugi">
+	<div class="container">
+		<div class="head">
+			<div>
+				<span class="eyebrow">Usługi</span>
+				<h2 class="section-title">Wszystko, czego potrzebuje<br />Twoje wnętrze</h2>
+			</div>
+			<p>
+				Zajmujemy się całym procesem — od pierwszego szkicu po sprzątanie po remoncie. Ty
+				wybierasz zakres, my dbamy o jakość i terminy.
+			</p>
+		</div>
+
+		<ol class="grid">
+			{
+				services.map((s, i) => (
+					<li class="card">
+						<span class="num">{String(i + 1).padStart(2, '0')}</span>
+						<h3>{s.title}</h3>
+						<p>{s.text}</p>
+					</li>
+				))
+			}
+		</ol>
+	</div>
+</section>
+
+<style>
+	.services {
+		background: var(--surface);
+	}
+	.head {
+		display: grid;
+		grid-template-columns: 1.2fr 1fr;
+		gap: 48px;
+		align-items: end;
+		margin-bottom: 64px;
+	}
+	.head p {
+		color: var(--muted);
+		font-weight: 300;
+		font-size: 17px;
+	}
+	.grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		border-top: 1px solid var(--line);
+		border-left: 1px solid var(--line);
+	}
+	.card {
+		padding: 40px 36px 44px;
+		border-right: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		transition: background 0.25s;
+	}
+	.card:hover {
+		background: var(--bg);
+	}
+	.num {
+		display: block;
+		font-family: var(--font-serif);
+		font-size: 18px;
+		color: var(--accent);
+		margin-bottom: 40px;
+	}
+	.card h3 {
+		font-size: 22px;
+		font-weight: 400;
+		margin-bottom: 14px;
+	}
+	.card p {
+		color: var(--muted);
+		font-size: 15px;
+	}
+
+	@media (max-width: 900px) {
+		.head {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+		.grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+	@media (max-width: 600px) {
+		.grid {
+			grid-template-columns: 1fr;
+		}
+		.card {
+			padding: 32px 24px;
+		}
+		.num {
+			margin-bottom: 24px;
+		}
+	}
+</style>
