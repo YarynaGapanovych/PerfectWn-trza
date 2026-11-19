@@ -2,93 +2,16 @@
 // bathroom) in the PerfectWnętrza palette:
 //   public/flat.svg              — hero image
 //   public/services/<name>.svg   — one per service, highlighting that work
+//   public/cleaning/po-remoncie.svg — cleaning after renovation (other cleaning
+//                                   scenes: scripts/build-cleaning.mjs)
 // Run: node scripts/build-flat.mjs
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-const S = 46; // px per metre
-const C = Math.cos(Math.PI / 6);
-
-const P = {
-	charcoal: '#2b2b2b',
-	bronze: '#a4896a',
-	stone: '#77746f',
-	silver: '#bebebc',
-	mist: '#e4e4e1',
-	ivory: '#f2f1ed',
-	white: '#fbfaf7',
-	wood: '#d2bc9f',
-	woodDark: '#b89d7c',
-	tile: '#dcdbd6',
-	concrete: '#cfcdc8',
-	glass: '#dfe4e4',
-	water: '#d7e0e2',
-	leaf: '#7f8b74',
-	leafDark: '#6a7562',
-	wallFace: '#f4f3ef',
-	sofa: '#c9c7c2',
-};
-
-// ---------- helpers ----------
-const proj = ([x, y, z]) => [(x - y) * C * S, (x + y) * 0.5 * S - z * S];
-const fmt = (n) => Math.round(n * 10) / 10;
-
-const hex2rgb = (hex) => {
-	const n = parseInt(hex.slice(1), 16);
-	return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-};
-const rgb2hex = (c) => '#' + c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
-const shade = (hex, f) => rgb2hex(hex2rgb(hex).map((v) => v * f));
-const mix = (hex, to, t) => {
-	const a = hex2rgb(hex);
-	const b = hex2rgb(to);
-	return rgb2hex(a.map((v, i) => v + (b[i] - v) * t));
-};
-// "Faded" version of a colour: desaturate and push towards the page background
-const fade = (hex) => {
-	const [r, g, b] = hex2rgb(hex);
-	const l = 0.3 * r + 0.59 * g + 0.11 * b;
-	return mix(rgb2hex([l, l, l]), '#efeeea', 0.74);
-};
-
-const poly = (pts, fill, extra = '') =>
-	`<polygon points="${pts.map(proj).map(([a, b]) => `${fmt(a)},${fmt(b)}`).join(' ')}" fill="${fill}"${extra}/>`;
-const line = (a, b, stroke, w = 1, extra = '') => {
-	const [x1, y1] = proj(a);
-	const [x2, y2] = proj(b);
-	return `<line x1="${fmt(x1)}" y1="${fmt(y1)}" x2="${fmt(x2)}" y2="${fmt(y2)}" stroke="${stroke}" stroke-width="${w}"${extra}/>`;
-};
-const flat = (x0, x1, y0, y1, z, fill) => poly([[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]], fill);
-function onWall(plane, a0, a1, z0, z1, fill, extra = '') {
-	const pts =
-		plane === 'y'
-			? [[a0, 0, z0], [a1, 0, z0], [a1, 0, z1], [a0, 0, z1]]
-			: [[0, a0, z0], [0, a1, z0], [0, a1, z1], [0, a0, z1]];
-	return poly(pts, fill, extra);
-}
-function leaves(x, y, z, scale, c) {
-	const [cx, cy] = proj([x, y, z]);
-	const r = 14 * scale;
-	return [
-		[-8, 4, c(P.leafDark)],
-		[8, 2, c(P.leafDark)],
-		[0, -6, c(P.leaf)],
-		[-5, -2, c(P.leaf)],
-		[6, -4, c(P.leaf)],
-	]
-		.map(([dx, dy, col]) => {
-			const ex = fmt(cx + dx * scale);
-			const ey = fmt(cy + dy * scale);
-			return `<ellipse cx="${ex}" cy="${ey}" rx="${fmt(r * 0.7)}" ry="${fmt(r)}" fill="${col}" transform="rotate(${dx * 3} ${ex} ${ey})"/>`;
-		})
-		.join('');
-}
+import { P, W, D, H, T, proj, fmt, shade, fade, poly, flat, line, onWall, leaves, render, vw, vh, mopBucket, vacuum, wetSign, sparkles } from './iso.mjs';
 
 // ---------- layout constants (metres) ----------
-const W = 10;
-const D = 8;
-const H = 2.6; // back wall height
+// W, D, H, T come from iso.mjs (shared frame)
 const h = 1.0; // cut height of interior walls
-const T = 0.18; // wall thickness
 const XP = 4.4; // partition: bedroom/bath | living room
 const YP = 4.7; // partition: bedroom | bathroom
 
@@ -102,6 +25,7 @@ const YP = 4.7; // partition: bedroom | bathroom
  * opts.painting     -> walls being painted, floor being laid
  * opts.pins         -> check-mark pins above each room
  * opts.keys         -> keys on the dining table
+ * opts.cleaning     -> finished, empty flat being cleaned after the renovation
  */
 function buildScene(opts = {}) {
 	const furniture = opts.furniture !== false;
@@ -354,6 +278,32 @@ function buildScene(opts = {}) {
 		bucket(8.6, 6.4, P.silver);
 	}
 
+	if (opts.cleaning) {
+		// building dust still left on the part of the floor not cleaned yet
+		const dust = (x0, x1, y0, y1, o = 0.55) => decal(['dust'], () => poly([[x0, y0, 0.004], [x1, y0, 0.004], [x1, y1, 0.004], [x0, y1, 0.004]], '#cdc8bf', ` opacity="${o}"`));
+		dust(7.3, 9.9, 4.4, 7.9);
+		dust(6.4, 7.3, 5.6, 7.9, 0.35);
+		dust(8.2, 9.9, 3.4, 4.4, 0.35);
+		for (const [x, y] of [[6.9, 4.9], [7.6, 4.1], [6.2, 5.0], [8.6, 3.0]])
+			decal(['dust'], () => poly([[x, y, 0.005], [x + 0.35, y, 0.005], [x + 0.35, y + 0.2, 0.005], [x, y + 0.2, 0.005]], '#bfb9ae', ' opacity="0.45"'));
+		vacuum(box, 7.3, 3.6);
+		mopBucket(box, 2.4, 2.2);
+		wetSign(box, 3.6, 3.6);
+		ladder(9.35, 0.9); // cleaning the big window
+		bucket(8.6, 0.9, P.silver);
+		overlays.push(
+			sparkles([
+				[1.7, 0, 1.75, 13],
+				[9.25, 0, 1.9, 13],
+				[1.4, 1.2, 0.05],
+				[3.2, 1.6, 0.05, 9],
+				[0.55, 6.4, 0.75, 9],
+				[2.15, 6.6, 0.9, 9],
+				[5.4, 1.4, 0.05, 9],
+			]),
+		);
+	}
+
 	// ----- pins -----
 	if (opts.pins) {
 		for (const [x, y] of [[2.0, 2.3], [2.4, 6.4], [7.2, 3.0], [7.6, 6.5]]) {
@@ -371,91 +321,6 @@ function buildScene(opts = {}) {
 	return render(boxes, decals, overlays, colourFor);
 }
 
-// ---------- rendering ----------
-function drawBox(b, c) {
-	const { x0, x1, y0, y1, z0, z1 } = b;
-	const color = c(b.color);
-	const top = c(b.top ?? b.color);
-	const sideY = b.sideY ? c(b.sideY) : shade(color, 0.9);
-	const sideX = b.sideX ? c(b.sideX) : shade(color, 0.78);
-	const edge = ` stroke-linejoin="round" stroke-width="0.6"`;
-	let s = '';
-	s += poly([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], sideY, `${edge} stroke="${sideY}"`);
-	s += poly([[x1, y0, z0], [x1, y1, z0], [x1, y1, z1], [x1, y0, z1]], sideX, `${edge} stroke="${sideX}"`);
-	s += poly([[x0, y0, z1], [x1, y0, z1], [x1, y1, z1], [x0, y1, z1]], top, `${edge} stroke="${top}"`);
-	if (b.extra) s += b.extra(c);
-	return s;
-}
-
-const corners = (b) => {
-	const out = [];
-	for (const x of [b.x0, b.x1]) for (const y of [b.y0, b.y1]) for (const z of [b.z0, b.z1]) out.push(proj([x, y, z]));
-	return out;
-};
-
-// fixed frame so every image lines up: slab + back walls
-const frame = [
-	{ x0: -T, x1: W, y0: -T, y1: D, z0: -0.3, z1: H },
-].flatMap(corners);
-const pad = 24;
-const minX = Math.min(...frame.map((p) => p[0])) - pad;
-const minY = Math.min(...frame.map((p) => p[1])) - pad;
-const vw = Math.max(...frame.map((p) => p[0])) + pad - minX;
-const vh = Math.max(...frame.map((p) => p[1])) + pad + 16 - minY;
-
-function render(boxes, decals, overlays, colourFor) {
-	const eps = 1e-6;
-	for (const b of boxes) {
-		const cs = corners(b);
-		b.bb = [Math.min(...cs.map((q) => q[0])), Math.min(...cs.map((q) => q[1])), Math.max(...cs.map((q) => q[0])), Math.max(...cs.map((q) => q[1]))];
-		b.depth = (b.x0 + b.x1) / 2 + (b.y0 + b.y1) / 2 + (b.z0 + b.z1) / 2;
-	}
-	const overlap = (a, b) => a.bb[0] < b.bb[2] && b.bb[0] < a.bb[2] && a.bb[1] < b.bb[3] && b.bb[1] < a.bb[3];
-	const behind = (a, b) => a.x1 <= b.x0 + eps || a.y1 <= b.y0 + eps || a.z1 <= b.z0 + eps;
-
-	const slab = boxes.find((b) => b.isSlab);
-	const rest = boxes.filter((b) => !b.isSlab);
-	const edges = new Map(rest.map((b) => [b, new Set()]));
-	const indeg = new Map(rest.map((b) => [b, 0]));
-	for (const a of rest)
-		for (const b of rest) {
-			if (a === b || !overlap(a, b)) continue;
-			if (behind(a, b) && !behind(b, a) && !edges.get(a).has(b)) {
-				edges.get(a).add(b);
-				indeg.set(b, indeg.get(b) + 1);
-			}
-		}
-	const order = [];
-	const left = new Set(rest);
-	while (left.size) {
-		let ready = [...left].filter((b) => indeg.get(b) === 0);
-		if (!ready.length) ready = [...left];
-		ready.sort((a, b) => a.depth - b.depth);
-		const n = ready[0];
-		left.delete(n);
-		order.push(n);
-		for (const m of edges.get(n)) indeg.set(m, indeg.get(m) - 1);
-	}
-
-	const sh = [[-T, -T, -0.3], [W, -T, -0.3], [W, D, -0.3], [-T, D, -0.3]]
-		.map(proj)
-		.map(([a, b]) => `${fmt(a + 10)},${fmt(b + 14)}`)
-		.join(' ');
-
-	const body =
-		drawBox(slab, (x) => x) +
-		decals.map((d) => d.fn(colourFor(d.tags))).join('') +
-		order.map((b) => drawBox(b, colourFor(b.tags))).join('') +
-		overlays.join('');
-
-	return (label) => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${fmt(minX)} ${fmt(minY)} ${fmt(vw)} ${fmt(vh)}" width="${Math.round(vw)}" height="${Math.round(vh)}" role="img" aria-label="${label}">
-<defs><filter id="blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="14"/></filter></defs>
-<polygon points="${sh}" fill="#2b2b2b" opacity="0.18" filter="url(#blur)"/>
-${body}
-</svg>
-`;
-}
-
 // ---------- outputs ----------
 const has = (...want) => (tags) => want.some((t) => tags.includes(t));
 
@@ -467,9 +332,11 @@ const outputs = [
 	['services/zabudowy.svg', buildScene({ bookcase: true, focus: has('joinery') }), 'Wyróżnione zabudowy i meble na wymiar'],
 	['services/malowanie-podlogi.svg', buildScene({ furniture: false, painting: true }), 'Malowanie ścian i układanie podłóg'],
 	['services/nadzor.svg', buildScene({ pins: true }), 'Mieszkanie z zaznaczonymi etapami prac'],
+	['cleaning/po-remoncie.svg', buildScene({ furniture: false, cleaning: true }), 'Sprzątanie mieszkania po remoncie'],
 ];
 
 mkdirSync(new URL('../public/services/', import.meta.url), { recursive: true });
+mkdirSync(new URL('../public/cleaning/', import.meta.url), { recursive: true });
 for (const [file, svg, label] of outputs) {
 	writeFileSync(new URL(`../public/${file}`, import.meta.url), svg(label));
 	console.log(`public/${file}`);

@@ -1,0 +1,179 @@
+---
+/**
+ * Fullscreen photo viewer. Opens for any <a data-lightbox href="large.webp"> on the page.
+ * Keyboard: ← → Esc. Touch: swipe left/right, swipe down to close.
+ */
+---
+
+<dialog class="lightbox" aria-label="Podgląd zdjęcia">
+	<figure>
+		<img alt="" />
+	</figure>
+	<button class="lb-btn lb-close" type="button" aria-label="Zamknij">×</button>
+	<button class="lb-btn lb-prev" type="button" aria-label="Poprzednie zdjęcie">‹</button>
+	<button class="lb-btn lb-next" type="button" aria-label="Następne zdjęcie">›</button>
+	<span class="lb-counter" aria-live="polite"></span>
+</dialog>
+
+<script>
+	const dialog = document.querySelector<HTMLDialogElement>('dialog.lightbox');
+	const links = [...document.querySelectorAll<HTMLAnchorElement>('a[data-lightbox]')];
+
+	if (dialog && links.length) {
+		const img = dialog.querySelector('img')!;
+		const counter = dialog.querySelector('.lb-counter')!;
+		let index = 0;
+
+		const show = (i: number) => {
+			index = (i + links.length) % links.length;
+			const link = links[index];
+			img.classList.add('is-loading');
+			img.onload = () => img.classList.remove('is-loading');
+			img.src = link.href;
+			img.alt = link.querySelector('img')?.alt ?? '';
+			counter.textContent = `${index + 1} / ${links.length}`;
+			// Preload neighbours so arrows feel instant.
+			[index + 1, index - 1].forEach((n) => {
+				const pre = new Image();
+				pre.src = links[(n + links.length) % links.length].href;
+			});
+		};
+
+		links.forEach((link, i) =>
+			link.addEventListener('click', (e) => {
+				e.preventDefault();
+				show(i);
+				dialog.showModal();
+				document.documentElement.style.overflow = 'hidden';
+			}),
+		);
+
+		dialog.addEventListener('close', () => {
+			document.documentElement.style.overflow = '';
+			links[index]?.focus({ preventScroll: true });
+		});
+
+		dialog.querySelector('.lb-close')!.addEventListener('click', () => dialog.close());
+		dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(index - 1));
+		dialog.querySelector('.lb-next')!.addEventListener('click', () => show(index + 1));
+
+		// Click on the dark backdrop (not the photo or buttons) closes.
+		dialog.addEventListener('click', (e) => {
+			if (e.target === dialog || (e.target as Element).tagName === 'FIGURE') dialog.close();
+		});
+
+		dialog.addEventListener('keydown', (e) => {
+			if (e.key === 'ArrowRight') show(index + 1);
+			if (e.key === 'ArrowLeft') show(index - 1);
+		});
+
+		let startX = 0;
+		let startY = 0;
+		dialog.addEventListener('touchstart', (e) => {
+			startX = e.touches[0].clientX;
+			startY = e.touches[0].clientY;
+		}, { passive: true });
+		dialog.addEventListener('touchend', (e) => {
+			const dx = e.changedTouches[0].clientX - startX;
+			const dy = e.changedTouches[0].clientY - startY;
+			if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) show(index + (dx < 0 ? 1 : -1));
+			else if (dy > 80) dialog.close();
+		});
+	}
+</script>
+
+<style>
+	.lightbox {
+		width: 100vw;
+		height: 100dvh;
+		max-width: none;
+		max-height: none;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		background: rgba(20, 20, 20, 0.96);
+		color: var(--cream);
+	}
+	.lightbox::backdrop {
+		background: rgba(20, 20, 20, 0.96);
+	}
+	figure {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 56px 72px;
+		box-sizing: border-box;
+	}
+	img {
+		width: auto;
+		height: auto;
+		max-width: 100%;
+		max-height: 100%;
+		min-height: 0;
+		object-fit: contain;
+		transition: opacity 0.2s;
+	}
+	img.is-loading {
+		opacity: 0.35;
+	}
+	.lb-btn {
+		position: absolute;
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		padding: 0;
+		font-size: 34px;
+		line-height: 1;
+		font-family: var(--font-sans);
+		font-weight: 300;
+		color: var(--cream);
+		background: rgba(255, 255, 255, 0.08);
+		border: 0;
+		border-radius: 50%;
+		cursor: pointer;
+		transition: background 0.2s;
+	}
+	.lb-btn:hover,
+	.lb-btn:focus-visible {
+		background: var(--bronze);
+	}
+	.lb-close {
+		top: 16px;
+		right: 16px;
+	}
+	.lb-prev,
+	.lb-next {
+		top: 50%;
+		transform: translateY(-50%);
+	}
+	.lb-prev {
+		left: 16px;
+	}
+	.lb-next {
+		right: 16px;
+	}
+	.lb-counter {
+		position: absolute;
+		left: 50%;
+		bottom: 18px;
+		transform: translateX(-50%);
+		font-size: 13px;
+		letter-spacing: 0.1em;
+		color: var(--silver);
+	}
+	@media (max-width: 600px) {
+		figure {
+			padding: 64px 0;
+		}
+		.lb-prev,
+		.lb-next {
+			top: auto;
+			bottom: 8px;
+			transform: none;
+		}
+	}
+</style>

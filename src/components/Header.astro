@@ -1,13 +1,15 @@
 ---
 const links = [
-	{ href: '#uslugi', label: 'Usługi' },
-	{ href: '#kontakt', label: 'Kontakt' },
+	{ href: '/#uslugi', label: 'Usługi' },
+	{ href: '/#realizacje', label: 'Realizacje' },
+	{ href: '/sprzatanie/', label: 'Sprzątanie' },
+	{ href: '/#kontakt', label: 'Kontakt' },
 ];
 ---
 
 <header class="header">
 	<div class="container header-inner">
-		<a href="#top" class="logo" aria-label="PerfectWnętrza — strona główna">
+		<a href="/" class="logo" aria-label="PerfectWnętrza — strona główna">
 			<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" />
 		</a>
 
@@ -17,7 +19,7 @@ const links = [
 
 		<nav class="nav" id="main-nav">
 			{links.map((l) => <a href={l.href}>{l.label}</a>)}
-			<a href="#kontakt" class="btn btn-primary nav-cta">Bezpłatna wycena</a>
+			<a href="/#kontakt" class="btn btn-primary nav-cta">Bezpłatna wycena</a>
 		</nav>
 	</div>
 </header>

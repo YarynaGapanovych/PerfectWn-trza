@@ -36,7 +36,9 @@ const {
 		<script>
 			// "Do góry" and logo links: always scroll to the very top, even when
 			// the address already ends in #top (a plain anchor would do nothing then).
-			document.querySelectorAll<HTMLAnchorElement>('a[href="#top"]').forEach((link) =>
+			// On the home page, links to "/" (logo, "Start") do the same instead of reloading.
+			const topLinks = location.pathname === '/' ? 'a[href="#top"], a[href="/"]' : 'a[href="#top"]';
+			document.querySelectorAll<HTMLAnchorElement>(topLinks).forEach((link) =>
 				link.addEventListener('click', (event) => {
 					event.preventDefault();
 					window.scrollTo({ top: 0, behavior: 'smooth' });
