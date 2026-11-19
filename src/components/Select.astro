@@ -9,7 +9,11 @@ interface Props {
 }
 
 const { name, label, options, value = options[0] } = Astro.props;
-const id = `select-${name}`;
+const id = `select-${name
+	.toLowerCase()
+	.normalize('NFD')
+	.replace(/[^a-z0-9]+/g, '-')
+	.replace(/^-|-$/g, '')}`;
 ---
 
 <div class="select" data-select>
@@ -91,6 +95,14 @@ const id = `select-${name}`;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 			close();
 		};
+
+		// form.reset() doesn't restore hidden inputs, so put the initial option back ourselves.
+		const initial = active;
+		root.closest('form')?.addEventListener('reset', () => {
+			options.forEach((o, j) => o.setAttribute('aria-selected', String(j === initial)));
+			input.value = options[initial].dataset.value ?? '';
+			valueEl.textContent = input.value;
+		});
 
 		trigger.addEventListener('click', () => (list.hidden ? open() : close()));
 		trigger.addEventListener('keydown', (e) => {

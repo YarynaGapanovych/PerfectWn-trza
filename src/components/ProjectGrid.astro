@@ -1,0 +1,51 @@
+---
+import ProjectCard from './ProjectCard.astro';
+import type { Project } from '../lib/portfolio';
+
+interface Props {
+	projects: Project[];
+}
+
+const { projects } = Astro.props;
+---
+
+<!-- Desktop: first two projects large (half width each), the rest in rows of three. -->
+<ul class="project-grid">
+	{projects.map((p, i) => <ProjectCard project={p} eager={i < 2} large={i < 2} />)}
+</ul>
+
+<style>
+	.project-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(6, 1fr);
+		gap: 48px 32px;
+	}
+	.project-grid > :global(li) {
+		grid-column: span 2;
+	}
+	.project-grid > :global(li:nth-child(-n + 2)) {
+		grid-column: span 3;
+	}
+	@media (max-width: 900px) {
+		.project-grid {
+			grid-template-columns: repeat(2, 1fr);
+			gap: 40px 24px;
+		}
+		.project-grid > :global(li),
+		.project-grid > :global(li:nth-child(-n + 2)) {
+			grid-column: span 1;
+		}
+		/* Odd number of projects: let the last one span the full row. */
+		.project-grid > :global(li:last-child:nth-child(odd)) {
+			grid-column: 1 / -1;
+		}
+	}
+	@media (max-width: 600px) {
+		.project-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

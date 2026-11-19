@@ -64,6 +64,14 @@ const services = [
 				))
 			}
 		</ol>
+
+		<a href="/sprzatanie/" class="cleaning">
+			<span>
+				<span class="eyebrow">Nowość · Sprzątanie</span>
+				<strong>Sprzątamy też klatki schodowe, obiekty komercyjne i niekomercyjne oraz wnętrza po remoncie.</strong>
+			</span>
+			<span class="cleaning-cta">Zobacz ofertę →</span>
+		</a>
 	</div>
 </section>
 
@@ -128,7 +136,45 @@ const services = [
 		font-size: 15px;
 	}
 
+	.cleaning {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 24px 48px;
+		margin-top: 48px;
+		padding: 32px 36px;
+		background: var(--charcoal);
+		color: var(--cream);
+		text-decoration: none;
+		border-radius: var(--radius);
+		transition: background 0.2s;
+	}
+	.cleaning:hover {
+		background: #1f1f1f;
+	}
+	.cleaning .eyebrow {
+		display: block;
+		margin-bottom: 8px;
+	}
+	.cleaning strong {
+		font-family: var(--font-serif);
+		font-size: 20px;
+		font-weight: 300;
+	}
+	.cleaning-cta {
+		flex-shrink: 0;
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--bronze);
+	}
+
 	@media (max-width: 900px) {
+		.cleaning {
+			flex-direction: column;
+			align-items: flex-start;
+		}
 		.head {
 			grid-template-columns: 1fr;
 			gap: 20px;

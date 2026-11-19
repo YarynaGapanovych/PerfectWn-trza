@@ -1,0 +1,230 @@
+---
+import { Picture, getImage } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Lightbox from '../../components/Lightbox.astro';
+import { getSelectedImages, getProjects, type Project } from '../../lib/portfolio';
+
+export async function getStaticPaths() {
+	const projects = await getProjects();
+	return projects.map((project, i) => ({
+		params: { slug: project.id },
+		props: {
+			project,
+			prev: projects[(i - 1 + projects.length) % projects.length],
+			next: projects[(i + 1) % projects.length],
+		},
+	}));
+}
+
+interface Props {
+	project: Project;
+	prev: Project;
+	next: Project;
+}
+
+const { project, prev, next } = Astro.props;
+const { title, location, scope } = project.data;
+
+const images = await Promise.all(
+	(await getSelectedImages(project)).map(async (img, i) => ({
+		...img,
+		alt: `${title} — zdjęcie ${i + 1}`,
+		large: await getImage({ src: img.src, width: 1800, format: 'webp' }),
+	})),
+);
+---
+
+<Layout
+	title={`${title} — Realizacje | PerfectWnętrza`}
+	description={`${title}${location ? `, ${location}` : ''}. Zobacz zdjęcia z realizacji PerfectWnętrza.`}
+>
+	<Header />
+	<main>
+		<section class="intro">
+			<div class="container">
+				<h1>{title}</h1>
+
+				{
+					scope && scope.length > 0 && (
+						<div class="scope">
+							<h2>Zakres prac</h2>
+							<ul>{scope.map((s) => <li>{s}</li>)}</ul>
+						</div>
+					)
+				}
+			</div>
+		</section>
+
+		<section class="gallery-section">
+			<div class="container">
+				<ul class="gallery">
+					{
+						images.map((img, i) => (
+							<li>
+								<a href={img.large.src} data-lightbox aria-label={`Powiększ: ${img.alt}`}>
+									<Picture
+										src={img.src}
+										alt={img.alt}
+										widths={[400, 800, 1200]}
+										sizes="(max-width: 600px) 100vw, (max-width: 900px) 50vw, 380px"
+										formats={['avif', 'webp']}
+										loading={i < 3 ? 'eager' : 'lazy'}
+									/>
+								</a>
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</section>
+
+		<section class="cta">
+			<div class="container cta-inner">
+				<div>
+					<span class="eyebrow">Twoje wnętrze</span>
+					<h2 class="section-title">Planujesz podobny remont?</h2>
+				</div>
+				<a href="/#kontakt" class="btn btn-primary">Bezpłatna wycena</a>
+			</div>
+		</section>
+
+		<nav class="pager container" aria-label="Inne realizacje">
+			<a href={`/realizacje/${prev.id}/`} class="prev">
+				<span>← Poprzednia</span>
+				<strong>{prev.data.title}</strong>
+			</a>
+			<a href="/#realizacje" class="all">Wszystkie realizacje</a>
+			<a href={`/realizacje/${next.id}/`} class="next">
+				<span>Następna →</span>
+				<strong>{next.data.title}</strong>
+			</a>
+		</nav>
+	</main>
+	<Footer />
+	<Lightbox />
+</Layout>
+
+<style>
+	.intro {
+		padding: 64px 0 48px;
+	}
+	h1 {
+		font-size: clamp(34px, 5vw, 56px);
+	}
+	.scope {
+		margin-top: 32px;
+	}
+	.scope h2 {
+		font-size: 20px;
+		font-weight: 400;
+		margin-bottom: 12px;
+	}
+	.scope ul {
+		margin: 0;
+		padding-left: 18px;
+		color: var(--muted);
+	}
+	.gallery-section {
+		padding-bottom: 96px;
+	}
+	.gallery {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		columns: 3 300px;
+		column-gap: 16px;
+	}
+	.gallery li {
+		break-inside: avoid;
+		margin-bottom: 16px;
+	}
+	.gallery a {
+		display: block;
+		overflow: hidden;
+		border-radius: var(--radius);
+		background: var(--mist);
+		cursor: zoom-in;
+	}
+	.gallery :global(img) {
+		width: 100%;
+		height: auto;
+		transition: transform 0.4s ease, opacity 0.2s;
+	}
+	.gallery a:hover :global(img) {
+		transform: scale(1.03);
+	}
+	.gallery a:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+	.cta {
+		background: var(--surface);
+		padding: 72px 0;
+	}
+	.cta-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 32px;
+		flex-wrap: wrap;
+	}
+	.pager {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		align-items: center;
+		gap: 24px;
+		padding-top: 48px;
+		padding-bottom: 64px;
+	}
+	.pager a {
+		text-decoration: none;
+	}
+	.pager .prev,
+	.pager .next {
+		display: flex;
+		flex-direction: column;
+		gap: 4px;
+	}
+	.pager .next {
+		text-align: right;
+	}
+	.pager span,
+	.pager .all {
+		font-size: 12px;
+		font-weight: 500;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+	.pager strong {
+		font-family: var(--font-serif);
+		font-weight: 400;
+		font-size: 18px;
+		transition: color 0.2s;
+	}
+	.pager a:hover strong,
+	.pager .all:hover {
+		color: var(--accent-dark);
+	}
+	@media (max-width: 600px) {
+		.intro {
+			padding: 40px 0 32px;
+		}
+		.gallery {
+			columns: 1;
+		}
+		.gallery-section {
+			padding-bottom: 64px;
+		}
+		.pager {
+			grid-template-columns: 1fr 1fr;
+		}
+		.pager .all {
+			grid-column: 1 / -1;
+			grid-row: 2;
+			text-align: center;
+		}
+	}
+</style>

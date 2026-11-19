@@ -1,0 +1,101 @@
+---
+import { Picture } from 'astro:assets';
+import { categoryLabels, countPhotos, getCover, type Project } from '../lib/portfolio';
+
+interface Props {
+	project: Project;
+	eager?: boolean;
+	/** Wider card (half of the container on desktop). */
+	large?: boolean;
+}
+
+const { project, eager = false, large = false } = Astro.props;
+const { title, category, location } = project.data;
+const cover = await getCover(project);
+const count = countPhotos(project);
+const photoWord = count === 1 ? 'zdjęcie' : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14) ? 'zdjęcia' : 'zdjęć';
+---
+
+<li class="card">
+	<a href={`/realizacje/${project.id}/`}>
+		<div class="media">
+			{
+				cover && (
+					<Picture
+						src={cover}
+						alt={title}
+						widths={[400, 700, 1000, 1400]}
+						sizes={`(max-width: 600px) 100vw, (max-width: 900px) 50vw, ${large ? 570 : 370}px`}
+						formats={['avif', 'webp']}
+						loading={eager ? 'eager' : 'lazy'}
+					/>
+				)
+			}
+			<span class="count">{count} {photoWord}</span>
+		</div>
+		<div class="body">
+			<span class="cat">{categoryLabels[category]}</span>
+			<h3>{title}</h3>
+			{location && <p class="loc">{location}</p>}
+		</div>
+	</a>
+</li>
+
+<style>
+	.card a {
+		display: block;
+		text-decoration: none;
+		color: inherit;
+	}
+	.media {
+		position: relative;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		background: var(--mist);
+		border-radius: var(--radius);
+	}
+	.media :global(img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.5s ease;
+	}
+	.card a:hover .media :global(img) {
+		transform: scale(1.04);
+	}
+	.count {
+		position: absolute;
+		right: 12px;
+		bottom: 12px;
+		padding: 4px 10px;
+		font-size: 12px;
+		letter-spacing: 0.04em;
+		color: var(--cream);
+		background: rgba(43, 43, 43, 0.72);
+		border-radius: var(--radius);
+	}
+	.body {
+		padding: 18px 2px 0;
+	}
+	.cat {
+		font-size: 11px;
+		font-weight: 500;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--accent);
+	}
+	h3 {
+		margin-top: 6px;
+		font-size: 21px;
+		font-weight: 400;
+		transition: color 0.2s;
+	}
+	.card a:hover h3 {
+		color: var(--accent-dark);
+	}
+	.loc {
+		margin-top: 4px;
+		color: var(--muted);
+		font-size: 14px;
+	}
+</style>
