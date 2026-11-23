@@ -9,7 +9,7 @@ lead: 'Dla właścicieli i zarządców mieszkań na doby. Sprzątamy między go�
 image: '/cleaning/najem.svg'
 imageAlt: 'Ilustracja apartamentu na wynajem w trakcie sprzątania'
 badge: { small: 'Między gośćmi', big: 'gotowe na przyjazd' }
-formService: 'Sprzątanie'
+formService: 'Mieszkanie na wynajem krótkoterminowy'
 scopeTitle: 'Co obejmuje sprzątanie'
 scope:
   - 'Sprzątanie całego apartamentu między pobytami gości'

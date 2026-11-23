@@ -9,7 +9,7 @@ lead: 'Для власників і керуючих квартир подобо
 image: '/cleaning/najem.svg'
 imageAlt: 'Ілюстрація орендованої квартири під час прибирання'
 badge: { small: 'Між гостями', big: 'готово до заїзду' }
-formService: 'Sprzątanie'
+formService: 'Mieszkanie na wynajem krótkoterminowy'
 scopeTitle: 'Що входить у прибирання'
 scope:
   - 'Прибирання всієї квартири між заїздами гостей'

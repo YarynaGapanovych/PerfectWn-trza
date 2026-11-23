@@ -23,10 +23,9 @@ const L = (path: string) => localize(path, lang);
 
 			<nav class="col" aria-label={f.navAria}>
 				<h4>{f.navTitle}</h4>
-				<a href={L('/')}>{t.common.start}</a>
-				<a href={L('/#uslugi')}>{t.nav.services}</a>
-				<a href={L('/#realizacje')}>{t.nav.projects}</a>
+				<a href={L('/')}>{t.nav.renovation}</a>
 				<a href={L('/sprzatanie/')}>{t.nav.cleaning}</a>
+				<a href={L('/#realizacje')}>{t.nav.projects}</a>
 				<a href={L('/#kontakt')}>{t.nav.contact}</a>
 			</nav>
 

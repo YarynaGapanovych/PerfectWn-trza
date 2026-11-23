@@ -3,20 +3,16 @@ import { getLang, localize, useT } from '../i18n';
 
 const lang = getLang(Astro.url);
 const t = useT(lang).services;
-// Illustration and landing page(s) per card; titles and texts come from the dictionary (same order).
-const meta = [
-	{ image: '/services/wykonczenia.svg', pages: ['wykonczenie-mieszkan'] },
-	{ image: '/services/remonty.svg', pages: ['remont-mieszkania'] },
-	{ image: '/services/lazienki-kuchnie.svg', pages: ['remont-lazienki', 'remont-kuchni'] },
-	{ image: '/services/zabudowy.svg', pages: [] },
-	{ image: '/services/malowanie-podlogi.svg', pages: [] },
-	{ image: '/services/nadzor.svg', pages: [] },
+// Illustration per card; titles and texts come from the dictionary (same order).
+const images = [
+	'/services/wykonczenia.svg',
+	'/services/remonty.svg',
+	'/services/lazienki-kuchnie.svg',
+	'/services/zabudowy.svg',
+	'/services/malowanie-podlogi.svg',
+	'/services/nadzor.svg',
 ];
-const services = t.cards.map((c, i) => ({
-	...c,
-	image: meta[i].image,
-	links: meta[i].pages.map((slug, j) => ({ href: localize(`/uslugi/${slug}/`, lang), label: c.links[j] })),
-}));
+const services = t.cards.map((c, i) => ({ ...c, image: images[i] }));
 ---
 
 <section class="section services" id="uslugi">
@@ -37,13 +33,6 @@ const services = t.cards.map((c, i) => ({
 						<span class="num">{String(i + 1).padStart(2, '0')}</span>
 						<h3>{s.title}</h3>
 						<p>{s.text}</p>
-						{s.links.length > 0 && (
-							<div class="more">
-								{s.links.map((l) => (
-									<a href={l.href}>{l.label} →</a>
-								))}
-							</div>
-						)}
 					</li>
 				))
 			}
@@ -118,23 +107,6 @@ const services = t.cards.map((c, i) => ({
 	.card p {
 		color: var(--muted);
 		font-size: 15px;
-	}
-	.more {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px 20px;
-		margin-top: 18px;
-	}
-	.more a {
-		font-size: 13px;
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: var(--accent-dark);
-	}
-	.more a:hover {
-		color: var(--ink);
 	}
 
 	.cleaning {

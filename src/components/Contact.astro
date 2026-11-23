@@ -4,7 +4,9 @@ import { site, telHref, whatsappHref } from '../data/site';
 import { getLang, langNames, localize, useT } from '../i18n';
 
 interface Props {
-	/** Work type pre-selected in "Rodzaj prac" — one of SERVICE_VALUES (Polish). */
+	/** Which form: renovation (home and renovation pages) or cleaning (cleaning pages). */
+	kind?: 'renovation' | 'cleaning';
+	/** Option pre-selected in the first dropdown — one of SERVICE_VALUES or CLEANING_VALUES (Polish). */
 	service?: string;
 }
 
@@ -12,18 +14,31 @@ const lang = getLang(Astro.url);
 const t = useT(lang);
 const c = t.contact;
 
-// Values sent to the inbox stay in Polish; visitors see them in their language (same order).
-const SERVICE_VALUES = [
-	'Wykończenie pod klucz',
-	'Malowanie i podłogi',
-	'Remont / modernizacja',
-	'Łazienka lub kuchnia',
-	'Zabudowy i stolarka',
-	'Sprzątanie',
+// Values sent to the inbox stay in Polish; visitors see them in their language (same order
+// as the dictionary lists).
+const SERVICE_VALUES = ['Wykończenie pod klucz', 'Malowanie i podłogi', 'Remont / modernizacja', 'Łazienka lub kuchnia', 'Zabudowy i stolarka', 'Inne'];
+const CLEANING_VALUES = [
+	'Klatka schodowa',
+	'Sprzątanie po remoncie',
+	'Biuro lub lokal komercyjny',
+	'Szkoła lub obiekt publiczny',
+	'Mieszkanie na wynajem krótkoterminowy',
 	'Inne',
 ];
-const services = SERVICE_VALUES.map((value, i) => ({ value, label: c.workTypes[i] }));
-const { service = SERVICE_VALUES[0] } = Astro.props;
+const FREQUENCY_VALUES = ['Jednorazowo', 'Regularnie', 'Jeszcze nie wiem'];
+
+const { kind = 'renovation' } = Astro.props;
+const cleaning = kind === 'cleaning';
+const cl = c.cleaning;
+const options = (values: string[], labels: string[]) => values.map((value, i) => ({ value, label: labels[i] }));
+
+// The first dropdown: type of work for renovation, type of place for cleaning.
+const first = cleaning
+	? { name: 'Rodzaj obiektu', label: cl.objectType, values: CLEANING_VALUES, labels: cl.objectTypes }
+	: { name: 'Rodzaj prac', label: c.workType, values: SERVICE_VALUES, labels: c.workTypes };
+const selected = first.values.includes(Astro.props.service ?? '') ? Astro.props.service : first.values[0];
+// Separate subjects so the two kinds of enquiry are easy to tell apart in the inbox.
+const subject = cleaning ? 'Nowe zapytanie — sprzątanie | PerfectWnętrza' : 'Nowe zapytanie — remont | PerfectWnętrza';
 
 const contactWays = ['Telefon', 'E-mail', ...(whatsappHref ? ['WhatsApp'] : [])].map((value) => ({ value, label: c.contactWays[value] }));
 
@@ -36,8 +51,8 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 	<div class="container grid">
 		<div class="info">
 			<span class="eyebrow">{c.eyebrow}</span>
-			<h2 class="section-title">{c.title}</h2>
-			<p class="intro">{c.intro}</p>
+			<h2 class="section-title">{cleaning ? cl.title : c.title}</h2>
+			<p class="intro">{cleaning ? cl.intro : c.intro}</p>
 
 			<dl class="details">
 				<div>
@@ -74,6 +89,7 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 			method="post"
 			action="https://api.web3forms.com/submit"
 			data-contact-form
+			data-kind={kind}
 			data-phone={site.phone}
 			data-email={site.email}
 			data-sending={c.sending}
@@ -82,7 +98,8 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 			data-or={c.or}
 		>
 			<input type="hidden" name="access_key" value={formKey ?? ''} />
-			<input type="hidden" name="subject" value="Nowe zapytanie ze strony PerfectWnętrza" />
+			<input type="hidden" name="subject" value={subject} />
+			<input type="hidden" name="Formularz" value={cleaning ? 'Sprzątanie' : 'Remont'} />
 			<input type="hidden" name="from_name" value="PerfectWnętrza — formularz" />
 			<!-- Tells you which language version the enquiry came from. -->
 			<input type="hidden" name="Język strony" value={langNames[lang]} />
@@ -111,15 +128,16 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 				<span>{c.email}</span>
 				<input type="email" name="email" autocomplete="email" required />
 			</label>
-			<Select name="Rodzaj prac" label={c.workType} options={services} value={service} />
+			<Select name={first.name} label={first.label} options={options(first.values, first.labels)} value={selected} />
+			{cleaning && <Select name="Częstotliwość" label={cl.frequency} options={options(FREQUENCY_VALUES, cl.frequencies)} />}
 			<label>
 				<span>{c.message}</span>
-				<textarea name="Wiadomość" rows="5" placeholder={c.messagePlaceholder} required></textarea>
+				<textarea name="Wiadomość" rows="5" placeholder={cleaning ? cl.messagePlaceholder : c.messagePlaceholder} required></textarea>
 			</label>
 			<Select name="Preferowany kontakt" label={c.contactWay} options={contactWays} value="Telefon" />
-			<p class="hint">
+			{!cleaning && <p class="hint">
 				{c.hintBefore} <a href={`mailto:${site.email}`}>{site.email}</a>{whatsappHref && <> {c.hintOr} <a href={whatsappHref} target="_blank" rel="noopener">WhatsApp</a></>} {c.hintAfter}
-			</p>
+			</p>}
 			<button type="submit" class="btn btn-primary" disabled={!formKey}>{c.submit}</button>
 			<p class="note">
 				{c.noteBefore} <a href={localize('/polityka-prywatnosci/', lang)}>{c.noteLink}</a>.
@@ -162,7 +180,7 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 				form.reset();
 				// Analytics: count successful enquiries (no-op without analytics).
 				(window as unknown as { plausible?: (e: string, o?: object) => void }).plausible?.('Formularz', {
-					props: { page: location.pathname },
+					props: { page: location.pathname, form: form.dataset.kind ?? '' },
 				});
 				show('success', success);
 			} catch (error) {

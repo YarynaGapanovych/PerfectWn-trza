@@ -37,6 +37,13 @@ html {
 	scroll-padding-top: 80px;
 }
 
+/* On phones the header has a second row (Remonty | Sprzątanie switch). */
+@media (max-width: 500px) {
+	html {
+		scroll-padding-top: 130px;
+	}
+}
+
 body {
 	margin: 0;
 	background: var(--bg);

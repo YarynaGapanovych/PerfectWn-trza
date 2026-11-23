@@ -1,30 +1,59 @@
 ---
-import { getLang, langs, langLabels, langNames, localize, useT } from '../i18n';
+// Site header. The site has two sections, Remonty and Sprzątanie, with a switch between them;
+// "Usługi" points to the current section's services, and "Realizacje" shows only for renovation
+// (there is no cleaning portfolio yet). Service landing pages are linked from the cards and footer.
+import { getLang, langs, langLabels, langNames, localize, stripLang, useT } from '../i18n';
+import { getServices } from '../lib/services';
 
 const lang = getLang(Astro.url);
 const t = useT(lang);
-const links = [
-	{ href: localize('/#uslugi', lang), label: t.nav.services },
-	{ href: localize('/#realizacje', lang), label: t.nav.projects },
-	{ href: localize('/sprzatanie/', lang), label: t.nav.cleaning },
-	{ href: localize('/#kontakt', lang), label: t.nav.contact },
+const L = (path: string) => localize(path, lang);
+const path = stripLang(Astro.url.pathname);
+
+const services = await getServices(lang);
+const isServicePage = (slug: string) => path === `/uslugi/${slug}/`;
+const cleaningPages = services.filter((s) => s.data.kind === 'cleaning');
+
+// Which section this page belongs to. Pages in neither (privacy policy) use the renovation menu
+// without highlighting a section.
+const inCleaning = path === '/sprzatanie/' || cleaningPages.some((s) => isServicePage(s.slug));
+const inRenovation = !inCleaning && (path === '/' || path.startsWith('/uslugi/') || path.startsWith('/realizacje/'));
+const mode = inCleaning ? 'cleaning' : 'renovation';
+
+const sections = [
+	{ href: L('/'), label: t.nav.renovation, active: inRenovation },
+	{ href: L('/sprzatanie/'), label: t.nav.cleaning, active: inCleaning },
 ];
+
+// The section's list of services: cards on the home page, "Co sprzątamy" on the cleaning page.
+const servicesHref = L(mode === 'cleaning' ? '/sprzatanie/#zakres' : '/#uslugi');
+
+// Contact and the quote button go to this section's form: on the page if it has one, else on the section's main page.
+const hasForm = path === '/' || path === '/sprzatanie/' || path.startsWith('/uslugi/');
+const contactHref = hasForm ? '#kontakt' : L(mode === 'cleaning' ? '/sprzatanie/#kontakt' : '/#kontakt');
+
 // The same page in each language (all languages share the same slugs).
 const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname, l) }));
 ---
 
 <header class="header">
 	<div class="container header-inner">
-		<a href={localize('/', lang)} class="logo" aria-label={t.common.home}>
+		<a href={L('/')} class="logo" aria-label={t.common.home}>
 			<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" />
 		</a>
+
+		<nav class="sections" aria-label={t.nav.sections}>
+			{sections.map((s) => <a href={s.href} aria-current={s.active ? 'page' : undefined}>{s.label}</a>)}
+		</nav>
 
 		<button class="menu-toggle" aria-label={t.nav.openMenu} aria-expanded="false" aria-controls="main-nav">
 			<span></span><span></span>
 		</button>
 
 		<nav class="nav" id="main-nav">
-			{links.map((l) => <a href={l.href}>{l.label}</a>)}
+			<a href={servicesHref}>{t.nav.services}</a>
+			{mode === 'renovation' && <a href={L('/#realizacje')}>{t.nav.projects}</a>}
+			<a href={contactHref}>{t.nav.contact}</a>
 			<div class="lang" role="group" aria-label={t.common.language}>
 				{
 					switcher.map((s) => (
@@ -34,7 +63,7 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 					))
 				}
 			</div>
-			<a href={localize('/#kontakt', lang)} class="btn btn-primary nav-cta">{t.common.freeQuote}</a>
+			<a href={contactHref} class="btn btn-primary nav-cta">{t.common.freeQuote}</a>
 		</nav>
 	</div>
 </header>
@@ -44,16 +73,23 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	const toggle = document.querySelector('.menu-toggle');
 	const nav = document.querySelector('.nav');
 
-	toggle?.addEventListener('click', () => {
-		const open = header?.classList.toggle('is-open') ?? false;
-		toggle.setAttribute('aria-expanded', String(open));
+	const setMenu = (open: boolean) => {
+		header?.classList.toggle('is-open', open);
+		toggle?.setAttribute('aria-expanded', String(open));
+	};
+
+	toggle?.addEventListener('click', () => setMenu(!header?.classList.contains('is-open')));
+
+	document.addEventListener('keydown', (e) => {
+		if (e.key === 'Escape') setMenu(false);
+	});
+	// Tapping anywhere outside the header closes the open menu.
+	document.addEventListener('click', (e) => {
+		if (header?.classList.contains('is-open') && !header.contains(e.target as Node)) setMenu(false);
 	});
 
 	nav?.querySelectorAll('a').forEach((a) =>
-		a.addEventListener('click', () => {
-			header?.classList.remove('is-open');
-			toggle?.setAttribute('aria-expanded', 'false');
-		}),
+		a.addEventListener('click', () => setMenu(false)),
 	);
 
 	const onScroll = () => header?.classList.toggle('is-scrolled', window.scrollY > 10);
@@ -72,11 +108,14 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	.header.is-scrolled {
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 	}
+	/* The header gets more room than page content: the full menu is long in English/Ukrainian. */
 	.header-inner {
+		position: relative;
+		max-width: 1320px;
 		height: 80px;
 		display: flex;
 		align-items: center;
-		justify-content: space-between;
+		gap: 24px;
 	}
 	.logo {
 		display: block;
@@ -86,19 +125,60 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		height: 46px;
 		width: auto;
 	}
+
+	/* Section switch: Remonty | Sprzątanie */
+	.sections {
+		display: flex;
+		flex: none;
+		padding: 3px;
+		border: 1px solid rgba(255, 255, 255, 0.18);
+		border-radius: 999px;
+	}
+	.sections a {
+		padding: 7px 16px;
+		font-size: 12px;
+		font-weight: 500;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		text-decoration: none;
+		white-space: nowrap;
+		color: var(--silver);
+		border-radius: 999px;
+		transition: color 0.2s, background 0.2s;
+	}
+	.sections a:hover {
+		color: var(--cream);
+	}
+	.sections a[aria-current] {
+		background: var(--bronze);
+		color: #fff;
+	}
+
 	.nav {
 		display: flex;
 		align-items: center;
-		gap: 30px;
+		gap: 24px;
+		margin-left: auto;
 	}
 	.nav a:not(.btn) {
+		font: inherit;
+		font-size: 14px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		text-decoration: none;
 		white-space: nowrap;
+		color: var(--silver);
+		transition: color 0.2s;
 	}
+	.nav a:not(.btn):hover {
+		color: var(--cream);
+	}
+
 	/* Language switcher: PL · EN · UA */
 	.nav .lang {
 		display: flex;
 		gap: 2px;
-		padding-left: 24px;
+		padding-left: 20px;
 		border-left: 1px solid rgba(255, 255, 255, 0.15);
 	}
 	.nav .lang a {
@@ -110,17 +190,7 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	.nav .lang a[aria-current] {
 		color: var(--bronze);
 	}
-	.nav a:not(.btn) {
-		font-size: 14px;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: var(--silver);
-		transition: color 0.2s;
-	}
-	.nav a:not(.btn):hover {
-		color: var(--cream);
-	}
+
 	.nav-cta {
 		white-space: nowrap;
 		padding: 11px 20px;
@@ -132,10 +202,12 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		background: var(--bronze-dark);
 		border-color: var(--bronze-dark);
 	}
+
 	.menu-toggle {
 		display: none;
 		width: 40px;
 		height: 40px;
+		margin-left: auto;
 		background: none;
 		border: 0;
 		cursor: pointer;
@@ -156,55 +228,16 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		top: 24px;
 	}
 
-	/* Menu button below 1080px: longer English/Ukrainian labels don't fit in one row. */
-	@media (max-width: 1080px) {
-		.menu-toggle {
-			display: block;
-		}
-		.nav {
-			position: absolute;
-			top: 72px;
-			left: 0;
-			right: 0;
-			flex-direction: column;
-			align-items: stretch;
-			gap: 0;
-			padding: 8px 24px 24px;
-			background: var(--charcoal);
-			border-top: 1px solid rgba(255, 255, 255, 0.08);
-			display: none;
-		}
-		.nav a:not(.btn) {
-			padding: 16px 0;
-			border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-		}
+	/* Below 1240px: the menu moves behind the menu button; the section switch stays next to the logo. */
+	@media (max-width: 1240px) {
 		.header-inner {
 			height: 72px;
 		}
 		.logo img {
 			height: 38px;
 		}
-		.nav-cta {
-			margin-top: 20px;
-			justify-content: center;
-		}
-		.nav .lang {
-			padding: 16px 0 0;
-			border-left: 0;
-			gap: 8px;
-		}
-		.nav .lang a:not(.btn) {
-			padding: 8px 14px;
-			border: 1px solid rgba(255, 255, 255, 0.15);
-		}
-		.header.is-open .nav {
-			display: flex;
-		}
-	}
-	@media (max-width: 720px) {
-		.nav {
-			padding-left: 16px;
-			padding-right: 16px;
+		.menu-toggle {
+			display: block;
 		}
 		.header.is-open .menu-toggle span:first-child {
 			top: 19px;
@@ -213,6 +246,71 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		.header.is-open .menu-toggle span:last-child {
 			top: 19px;
 			transform: rotate(-45deg);
+		}
+
+		.nav {
+			position: absolute;
+			top: 100%;
+			left: 0;
+			right: 0;
+			flex-direction: column;
+			align-items: stretch;
+			gap: 0;
+			margin: 0;
+			padding: 8px 24px 24px;
+			background: var(--charcoal);
+			border-top: 1px solid rgba(255, 255, 255, 0.08);
+			display: none;
+			max-height: calc(100vh - 140px);
+			overflow-y: auto;
+		}
+		.header.is-open .nav {
+			display: flex;
+		}
+		.nav > a:not(.btn) {
+			padding: 14px 0;
+		}
+
+		.nav-cta {
+			margin-top: 20px;
+			justify-content: center;
+		}
+		.nav .lang {
+			order: 10;
+			padding: 16px 0 0;
+			border-left: 0;
+			gap: 8px;
+		}
+		.nav .lang a {
+			padding: 8px 14px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+		}
+	}
+	@media (max-width: 720px) {
+		.nav {
+			padding-left: 16px;
+			padding-right: 16px;
+		}
+	}
+	/* Phones: logo, switch and menu button don't fit on one line, so the switch gets its own
+	   full-width row, still visible without opening the menu. */
+	@media (max-width: 500px) {
+		.header-inner {
+			height: auto;
+			flex-wrap: wrap;
+			row-gap: 0;
+			padding-top: 14px;
+			padding-bottom: 12px;
+		}
+		.sections {
+			order: 3;
+			width: 100%;
+			margin-top: 12px;
+		}
+		.sections a {
+			flex: 1;
+			text-align: center;
+			padding: 9px 12px;
 		}
 	}
 </style>
