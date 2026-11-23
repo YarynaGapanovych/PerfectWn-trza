@@ -12,7 +12,6 @@ export const pl = {
 		start: 'Start',
 		freeQuote: 'Bezpłatna wycena',
 		seeScope: 'Zobacz zakres',
-		learnMore: 'Dowiedz się więcej →',
 		area: 'Kraków i okolice',
 		hours: 'Pon–Pt 8:00–18:00',
 		breadcrumbs: 'Okruszki',
@@ -24,6 +23,8 @@ export const pl = {
 		cleaning: 'Sprzątanie',
 		contact: 'Kontakt',
 		openMenu: 'Otwórz menu',
+		renovation: 'Remonty',
+		sections: 'Rodzaj usług',
 	},
 	hero: {
 		eyebrow: 'Wykończenia wnętrz pod klucz',
@@ -45,37 +46,31 @@ export const pl = {
 				title: 'Wykończenia pod klucz',
 				alt: 'Mieszkanie wykończone pod klucz',
 				text: 'Kompleksowa realizacja: od gładzi i podłóg, przez łazienki, po montaż oświetlenia i drzwi.',
-				links: ['Wykończenie pod klucz'],
 			},
 			{
 				title: 'Remonty i modernizacje',
 				alt: 'Mieszkanie w trakcie remontu',
 				text: 'Odświeżenie lub pełna przebudowa mieszkania, domu czy lokalu użytkowego — bez niespodzianek.',
-				links: ['Remont mieszkania'],
 			},
 			{
 				title: 'Łazienki i kuchnie',
 				alt: 'Wyróżniona łazienka i aneks kuchenny',
 				text: 'Precyzyjne prace glazurnicze, zabudowy na wymiar oraz instalacje wykonane zgodnie ze sztuką.',
-				links: ['Remont łazienki', 'Remont kuchni'],
 			},
 			{
 				title: 'Zabudowy i stolarka',
 				alt: 'Wyróżnione zabudowy i meble na wymiar',
 				text: 'Meble na wymiar, garderoby, sufity podwieszane i ściany z płyt g-k idealnie wpasowane w przestrzeń.',
-				links: [],
 			},
 			{
 				title: 'Malowanie i podłogi',
 				alt: 'Malowanie ścian i układanie podłóg',
 				text: 'Gładzie, malowanie ścian i sufitów oraz montaż paneli, desek i płytek — równo i czysto.',
-				links: [],
 			},
 			{
 				title: 'Nadzór i koordynacja',
 				alt: 'Mieszkanie z zaznaczonymi etapami prac',
 				text: 'Jeden opiekun zlecenia, jasny harmonogram i stały kontakt na każdym etapie prac.',
-				links: [],
 			},
 		],
 		cleaningEyebrow: 'Nowość · Sprzątanie',
@@ -190,7 +185,19 @@ export const pl = {
 		messagePlaceholder: 'Metraż, lokalizacja, oczekiwany termin…',
 		workType: 'Rodzaj prac',
 		/** Labels for the work types, same order as SERVICE_VALUES in Contact.astro. */
-		workTypes: ['Wykończenie pod klucz', 'Malowanie i podłogi', 'Remont / modernizacja', 'Łazienka lub kuchnia', 'Zabudowy i stolarka', 'Sprzątanie', 'Inne'],
+		workTypes: ['Wykończenie pod klucz', 'Malowanie i podłogi', 'Remont / modernizacja', 'Łazienka lub kuchnia', 'Zabudowy i stolarka', 'Inne'],
+		/** Cleaning enquiry form (cleaning page and short-term rental page). */
+		cleaning: {
+			title: 'Zamów bezpłatną wycenę sprzątania',
+			intro: 'Opisz obiekt i zakres sprzątania — odezwiemy się w ciągu 24 godzin z bezpłatną wyceną.',
+			objectType: 'Co mamy sprzątać?',
+			/** Same order as CLEANING_VALUES in Contact.astro. */
+			objectTypes: ['Klatka schodowa', 'Sprzątanie po remoncie', 'Biuro lub lokal komercyjny', 'Szkoła lub obiekt publiczny', 'Mieszkanie na wynajem krótkoterminowy', 'Inne'],
+			frequency: 'Jak często?',
+			/** Same order as FREQUENCY_VALUES in Contact.astro. */
+			frequencies: ['Jednorazowo', 'Regularnie', 'Jeszcze nie wiem'],
+			messagePlaceholder: 'Adres, powierzchnia, preferowane dni i godziny…',
+		},
 		contactWay: 'Jak mamy się z Tobą skontaktować?',
 		contactWays: { Telefon: 'Telefon', 'E-mail': 'E-mail', WhatsApp: 'WhatsApp' } as Record<string, string>,
 		hintBefore: 'Masz zdjęcia lub rzut mieszkania? Prześlij je na',

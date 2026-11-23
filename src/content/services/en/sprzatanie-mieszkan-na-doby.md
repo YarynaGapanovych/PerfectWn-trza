@@ -9,7 +9,7 @@ lead: 'For owners and managers of apartments rented by the night. We clean betwe
 image: '/cleaning/najem.svg'
 imageAlt: 'Illustration of a rental apartment being cleaned'
 badge: { small: 'Between guests', big: 'ready for arrival' }
-formService: 'Sprzątanie'
+formService: 'Mieszkanie na wynajem krótkoterminowy'
 scopeTitle: 'What the cleaning includes'
 scope:
   - 'Cleaning the whole apartment between guest stays'

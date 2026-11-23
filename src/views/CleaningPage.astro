@@ -7,25 +7,15 @@ import Steps from '../components/Steps.astro';
 import PageHero from '../components/PageHero.astro';
 import Reviews from '../components/Reviews.astro';
 import Faq from '../components/Faq.astro';
-import { getLang, localize, useT } from '../i18n';
+import { getLang, useT } from '../i18n';
 
 const lang = getLang(Astro.url);
 const t = useT(lang);
 const c = t.cleaning;
 
 // Only list services PerfectWnętrza actually offers. Text: i18n dictionaries (cleaning.cards, same order).
-const meta: { image: string; main?: boolean; page?: string }[] = [
-	{ image: '/cleaning/klatka.svg', main: true },
-	{ image: '/cleaning/po-remoncie.svg' },
-	{ image: '/cleaning/komercyjne.svg' },
-	{ image: '/cleaning/niekomercyjne.svg' },
-	{ image: '/cleaning/najem.svg', page: 'sprzatanie-mieszkan-na-doby' },
-];
-const services = c.cards.map((card, i) => ({
-	...card,
-	...meta[i],
-	href: meta[i].page ? localize(`/uslugi/${meta[i].page}/`, lang) : undefined,
-}));
+const images = ['/cleaning/klatka.svg', '/cleaning/po-remoncie.svg', '/cleaning/komercyjne.svg', '/cleaning/niekomercyjne.svg', '/cleaning/najem.svg'];
+const services = c.cards.map((card, i) => ({ ...card, image: images[i] }));
 ---
 
 <Layout title={c.metaTitle} description={c.metaDescription}>
@@ -50,12 +40,13 @@ const services = c.cards.map((card, i) => ({
 				<ul class="cards">
 					{
 						services.map((s, i) => (
-							<li class:list={['card', { main: s.main }]}>
+							<li class="card">
 								<img class="illus" src={s.image} alt={s.alt} width="779" height="620" loading="lazy" />
-								<span class="num">{String(i + 1).padStart(2, '0')}</span>
-								<h3>{s.title}</h3>
-								<p>{s.text}</p>
-								{s.href && <a class="more" href={s.href}>{t.common.learnMore}</a>}
+								<div class="card-text">
+									<span class="num">{String(i + 1).padStart(2, '0')}</span>
+									<h3>{s.title}</h3>
+									<p>{s.text}</p>
+								</div>
 							</li>
 						))
 					}
@@ -69,7 +60,7 @@ const services = c.cards.map((card, i) => ({
 
 		<Faq items={t.faq.cleaning} />
 
-		<Contact service="Sprzątanie" />
+		<Contact kind="cleaning" />
 	</main>
 	<Footer />
 </Layout>
@@ -83,23 +74,23 @@ const services = c.cards.map((card, i) => ({
 		margin: 56px 0 0;
 		padding: 0;
 		display: grid;
-		grid-template-columns: repeat(2, 1fr);
+		/* Desktop: two wide cards, then three. */
+		grid-template-columns: repeat(6, 1fr);
 		border-top: 1px solid var(--line);
 		border-left: 1px solid var(--line);
 	}
 	.card {
+		grid-column: span 2;
 		padding: 40px 36px 44px;
 		border-right: 1px solid var(--line);
 		border-bottom: 1px solid var(--line);
 		transition: background 0.25s;
 	}
-	.card:hover,
-	.card.main {
-		background: var(--bg);
+	.card:nth-child(-n + 2) {
+		grid-column: span 3;
 	}
-	/* Stairwell cleaning is the key service: bronze line on top. */
-	.card.main {
-		box-shadow: inset 0 3px 0 var(--accent);
+	.card:hover {
+		background: var(--bg);
 	}
 	.illus {
 		width: calc(100% + 24px);
@@ -127,23 +118,36 @@ const services = c.cards.map((card, i) => ({
 		color: var(--muted);
 		font-size: 15px;
 	}
-	.more {
-		display: inline-block;
-		margin-top: 18px;
-		font-size: 13px;
-		font-weight: 500;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		text-decoration: none;
-		color: var(--accent-dark);
-	}
-	.more:hover {
-		color: var(--ink);
-	}
 
+	/* Tablet: first card across the full width with the picture beside the text, then two by two. */
+	@media (max-width: 1024px) {
+		.cards {
+			grid-template-columns: repeat(2, 1fr);
+		}
+		.card,
+		.card:nth-child(-n + 2) {
+			grid-column: span 1;
+		}
+		.card:first-child {
+			grid-column: 1 / -1;
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 40px;
+			align-items: center;
+		}
+		.card:first-child .illus {
+			margin-bottom: -12px;
+		}
+	}
 	@media (max-width: 600px) {
 		.cards {
 			grid-template-columns: 1fr;
+		}
+		.card:first-child {
+			display: block;
+		}
+		.card:first-child .illus {
+			margin-bottom: 20px;
 		}
 		.card {
 			padding: 32px 24px;

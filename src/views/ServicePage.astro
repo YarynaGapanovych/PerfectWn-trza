@@ -112,7 +112,7 @@ const jsonLd = [
 		{!cleaning && <WhyUs />}
 		<Reviews topic={cleaning ? 'cleaning' : 'renovation'} />
 		{d.faq.length > 0 && <Faq items={d.faq} />}
-		<Contact service={d.formService} />
+		<Contact kind={cleaning ? 'cleaning' : 'renovation'} service={d.formService} />
 	</main>
 	<Footer />
 </Layout>
