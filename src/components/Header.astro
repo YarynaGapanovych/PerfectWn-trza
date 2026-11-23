@@ -20,9 +20,20 @@ const inCleaning = path === '/sprzatanie/' || cleaningPages.some((s) => isServic
 const inRenovation = !inCleaning && (path === '/' || path.startsWith('/uslugi/') || path.startsWith('/realizacje/'));
 const mode = inCleaning ? 'cleaning' : 'renovation';
 
+// Line icons (viewBox 24): paint roller for renovation, mop for cleaning.
 const sections = [
-	{ href: L('/'), label: t.nav.renovation, active: inRenovation },
-	{ href: L('/sprzatanie/'), label: t.nav.cleaning, active: inCleaning },
+	{
+		href: L('/'),
+		label: t.nav.renovation,
+		active: inRenovation,
+		icon: '<rect x="3" y="3" width="14" height="6" rx="1.5"/><path d="M17 6h3v5.5h-8V15"/><rect x="10.5" y="15" width="3" height="6" rx="1"/>',
+	},
+	{
+		href: L('/sprzatanie/'),
+		label: t.nav.cleaning,
+		active: inCleaning,
+		icon: '<path d="M15 2l-3 10"/><path d="M8 12h8l2 9H6Z"/><path d="M10 15.5l-.5 5.5M14 15.5l.5 5.5M12 15.5V21"/>',
+	},
 ];
 
 // The section's list of services: cards on the home page, "Co sprzątamy" on the cleaning page.
@@ -43,7 +54,14 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		</a>
 
 		<nav class="sections" aria-label={t.nav.sections}>
-			{sections.map((s) => <a href={s.href} aria-current={s.active ? 'page' : undefined}>{s.label}</a>)}
+			{
+				sections.map((s) => (
+					<a href={s.href} aria-current={s.active ? 'page' : undefined}>
+						<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={s.icon} />
+						{s.label}
+					</a>
+				))
+			}
 		</nav>
 
 		<button class="menu-toggle" aria-label={t.nav.openMenu} aria-expanded="false" aria-controls="main-nav">
@@ -63,7 +81,6 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 					))
 				}
 			</div>
-			<a href={contactHref} class="btn btn-primary nav-cta">{t.common.freeQuote}</a>
 		</nav>
 	</div>
 </header>
@@ -108,18 +125,22 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	.header.is-scrolled {
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 	}
-	/* The header gets more room than page content: the full menu is long in English/Ukrainian. */
+	/* Logo on the left; menu and the section switch on the right (on tablets: switch and menu
+	   button). The header gets more room than page content. */
 	.header-inner {
 		position: relative;
 		max-width: 1320px;
 		height: 80px;
-		display: flex;
+		display: grid;
+		grid-template-columns: 1fr auto auto;
 		align-items: center;
-		gap: 24px;
+		column-gap: 24px;
 	}
 	.logo {
+		grid-column: 1;
+		grid-row: 1;
+		justify-self: start;
 		display: block;
-		flex: none;
 	}
 	.logo img {
 		height: 46px;
@@ -128,14 +149,19 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 
 	/* Section switch: Remonty | Sprzątanie */
 	.sections {
+		grid-column: 3;
+		grid-row: 1;
 		display: flex;
-		flex: none;
 		padding: 3px;
 		border: 1px solid rgba(255, 255, 255, 0.18);
 		border-radius: 999px;
 	}
 	.sections a {
-		padding: 7px 16px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		gap: 7px;
+		padding: 7px 16px 7px 13px;
 		font-size: 12px;
 		font-weight: 500;
 		letter-spacing: 0.1em;
@@ -155,10 +181,12 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	}
 
 	.nav {
+		grid-column: 2;
+		grid-row: 1;
+		justify-self: end;
 		display: flex;
 		align-items: center;
 		gap: 24px;
-		margin-left: auto;
 	}
 	.nav a:not(.btn) {
 		font: inherit;
@@ -191,23 +219,13 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		color: var(--bronze);
 	}
 
-	.nav-cta {
-		white-space: nowrap;
-		padding: 11px 20px;
-		background: var(--bronze);
-		border-color: var(--bronze);
-		color: #fff;
-	}
-	.nav-cta:hover {
-		background: var(--bronze-dark);
-		border-color: var(--bronze-dark);
-	}
-
 	.menu-toggle {
+		grid-column: 3;
+		grid-row: 1;
+		justify-self: end;
 		display: none;
 		width: 40px;
 		height: 40px;
-		margin-left: auto;
 		background: none;
 		border: 0;
 		cursor: pointer;
@@ -228,8 +246,11 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		top: 24px;
 	}
 
-	/* Below 1240px: the menu moves behind the menu button; the section switch stays next to the logo. */
+	/* Below 1240px: the menu moves behind the menu button, next to the switch. */
 	@media (max-width: 1240px) {
+		.sections {
+			grid-column: 2;
+		}
 		.header-inner {
 			height: 72px;
 		}
@@ -249,6 +270,11 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		}
 
 		.nav {
+			/* Auto placement: an absolutely-positioned grid item then spans the whole header
+			   (with a column set it would only cover that column). */
+			grid-column: auto;
+			grid-row: auto;
+			justify-self: stretch;
 			position: absolute;
 			top: 100%;
 			left: 0;
@@ -271,10 +297,6 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 			padding: 14px 0;
 		}
 
-		.nav-cta {
-			margin-top: 20px;
-			justify-content: center;
-		}
 		.nav .lang {
 			order: 10;
 			padding: 16px 0 0;
@@ -297,14 +319,16 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	@media (max-width: 500px) {
 		.header-inner {
 			height: auto;
-			flex-wrap: wrap;
-			row-gap: 0;
+			grid-template-columns: 1fr auto;
 			padding-top: 14px;
 			padding-bottom: 12px;
 		}
+		.menu-toggle {
+			grid-column: 2;
+		}
 		.sections {
-			order: 3;
-			width: 100%;
+			grid-column: 1 / -1;
+			grid-row: 2;
 			margin-top: 12px;
 		}
 		.sections a {

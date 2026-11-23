@@ -8,12 +8,14 @@ const t = useT(lang);
 const f = t.footer;
 const year = new Date().getFullYear();
 const services = await getServices(lang);
+// Footer list of service landing pages (/uslugi/…). Hidden for now; set to true to show it again.
+const showServices = false;
 const L = (path: string) => localize(path, lang);
 ---
 
 <footer class="footer">
 	<div class="container">
-		<div class="top">
+		<div class:list={['top', { 'with-services': showServices }]}>
 			<div class="brand">
 				<a href={L('/')} class="logo" aria-label={t.common.home}>
 					<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" loading="lazy" />
@@ -25,14 +27,18 @@ const L = (path: string) => localize(path, lang);
 				<h4>{f.navTitle}</h4>
 				<a href={L('/')}>{t.nav.renovation}</a>
 				<a href={L('/sprzatanie/')}>{t.nav.cleaning}</a>
-				<a href={L('/#realizacje')}>{t.nav.projects}</a>
+				<a href={L('/#realizacje')}>{f.projects}</a>
 				<a href={L('/#kontakt')}>{t.nav.contact}</a>
 			</nav>
 
-			<nav class="col" aria-label={f.servicesTitle}>
-				<h4>{f.servicesTitle}</h4>
-				{services.map((s) => <a href={L(`/uslugi/${s.slug}/`)}>{s.data.name}</a>)}
-			</nav>
+			{
+				showServices && (
+					<nav class="col" aria-label={f.servicesTitle}>
+						<h4>{f.servicesTitle}</h4>
+						{services.map((s) => <a href={L(`/uslugi/${s.slug}/`)}>{s.data.name}</a>)}
+					</nav>
+				)
+			}
 
 			<div class="col">
 				<h4>{f.contactTitle}</h4>
@@ -61,7 +67,7 @@ const L = (path: string) => localize(path, lang);
 	}
 	.top {
 		display: grid;
-		grid-template-columns: 1.6fr 1fr 1.2fr 1.2fr;
+		grid-template-columns: 2fr 1fr 1fr;
 		gap: 48px;
 		padding-bottom: 56px;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -114,8 +120,13 @@ const L = (path: string) => localize(path, lang);
 		color: var(--stone);
 	}
 
+	.top.with-services {
+		grid-template-columns: 1.6fr 1fr 1.2fr 1.2fr;
+	}
+
 	@media (max-width: 760px) {
-		.top {
+		.top,
+		.top.with-services {
 			grid-template-columns: 1fr 1fr;
 		}
 		.brand {

@@ -8,7 +8,7 @@
 // Run: node scripts/build-flat.mjs
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-import { P, W, D, H, T, proj, fmt, shade, fade, poly, flat, line, onWall, leaves, render, vw, vh, mopBucket, vacuum, wetSign, cart, sparkles } from './iso.mjs';
+import { P, W, D, H, T, proj, fmt, shade, fade, soften, poly, flat, line, onWall, leaves, render, vw, vh, mopBucket, vacuum, wetSign, cart, sparkles } from './iso.mjs';
 
 // ---------- layout constants (metres) ----------
 // W, D, H, T come from iso.mjs (shared frame)
@@ -28,11 +28,19 @@ const YP = 4.7; // partition: bedroom | bathroom
  * opts.keys         -> keys on the dining table
  * opts.cleaning     -> finished, empty flat being cleaned after the renovation
  * opts.tidy         -> furnished flat during regular cleaning (cleaning page hero)
+ * opts.soften       -> cleaning scenes: soften everything except the cleaning tools ('clean')
+ *                      and wet floor ('wet'), so the aqua tools are the focus
  */
 function buildScene(opts = {}) {
 	const furniture = opts.furniture !== false;
 	const focus = opts.focus;
-	const colourFor = (tags) => (focus && !focus(tags) ? fade : (c) => c);
+	const keep = (c) => c;
+	const colourFor = opts.soften
+		? (tags) => (tags.includes('clean') || tags.includes('wet') ? keep : soften)
+		: (tags) => (focus && !focus(tags) ? fade : keep);
+	// Colours drawn outside colourFor (slab, windows on the walls): softened only in cleaning scenes,
+	// so the renovation images stay exactly as they are.
+	const sc = opts.soften ? soften : keep;
 
 	const boxes = [];
 	const decals = [];
@@ -41,7 +49,7 @@ function buildScene(opts = {}) {
 	const decal = (tags, fn) => decals.push({ tags, fn });
 
 	// ----- slab and floors -----
-	box(['structure'], -T, W, -T, D, -0.3, 0, P.ivory, { sideY: P.stone, sideX: shade(P.stone, 0.82), isSlab: true });
+	box(['structure'], -T, W, -T, D, -0.3, 0, sc(P.ivory), { sideY: sc(P.stone), sideX: sc(shade(P.stone, 0.82)), isSlab: true });
 
 	const woodTags = ['floor', 'floor-wood'];
 	if (opts.renovation) {
@@ -87,15 +95,15 @@ function buildScene(opts = {}) {
 		extra: (c) => {
 			let s = '';
 			if (paintedTo) {
-				s += onWall('y', 0, paintedTo, 0, H, '#d9c8b2');
-				s += onWall('y', paintedTo, paintedTo + 0.35, 0.9, 1.9, '#e2d5c4');
+				s += onWall('y', 0, paintedTo, 0, H, sc('#d9c8b2'));
+				s += onWall('y', paintedTo, paintedTo + 0.35, 0.9, 1.9, sc('#e2d5c4'));
 			}
 			s +=
-				onWall('y', 0.9, 2.5, 0.9, 2.2, P.glass, ` stroke="${P.charcoal}" stroke-width="2"`) +
-				line([1.7, 0, 0.9], [1.7, 0, 2.2], P.charcoal, 1.5) +
-				onWall('y', 0.8, 2.6, 0.82, 0.9, P.silver) +
-				onWall('y', 8.8, 9.7, 0.35, 2.3, P.glass, ` stroke="${P.charcoal}" stroke-width="2"`) +
-				line([9.25, 0, 0.35], [9.25, 0, 2.3], P.charcoal, 1.5);
+				onWall('y', 0.9, 2.5, 0.9, 2.2, sc(P.glass), ` stroke="${sc(P.charcoal)}" stroke-width="2"`) +
+				line([1.7, 0, 0.9], [1.7, 0, 2.2], sc(P.charcoal), 1.5) +
+				onWall('y', 0.8, 2.6, 0.82, 0.9, sc(P.silver)) +
+				onWall('y', 8.8, 9.7, 0.35, 2.3, sc(P.glass), ` stroke="${sc(P.charcoal)}" stroke-width="2"`) +
+				line([9.25, 0, 0.35], [9.25, 0, 2.3], sc(P.charcoal), 1.5);
 			if (furniture) {
 				const tc = colourFor(['tv', 'room:living']);
 				s += onWall('y', 6.0, 8.2, 0.95, 2.05, tc(P.charcoal)) + onWall('y', 6.06, 8.14, 1.0, 2.0, tc('#3a3a3a'));
@@ -120,7 +128,7 @@ function buildScene(opts = {}) {
 				const ac = colourFor(['art', 'room:bed']);
 				s += onWall('x', 1.35, 2.65, 1.3, 2.05, ac(P.bronze)) + onWall('x', 1.42, 2.58, 1.36, 1.99, ac(P.ivory)) + onWall('x', 1.75, 2.25, 1.5, 1.85, ac(P.stone));
 			}
-			s += onWall('x', 6.0, 7.1, 1.45, 2.25, P.glass, ` stroke="${P.charcoal}" stroke-width="2"`);
+			s += onWall('x', 6.0, 7.1, 1.45, 2.25, sc(P.glass), ` stroke="${sc(P.charcoal)}" stroke-width="2"`);
 			if (!opts.renovation) {
 				const bc = colourFor(['tiles', 'room:bath']);
 				s += onWall('x', YP + 0.1, D, 0, 1.2, bc('#e7e6e2'));
@@ -309,7 +317,7 @@ function buildScene(opts = {}) {
 	if (opts.tidy) {
 		// freshly mopped patches in the living room and bathroom
 		for (const [x0, x1, y0, y1] of [[5.0, 6.4, 5.0, 6.3], [8.9, 9.8, 4.9, 6.2], [1.3, 3.0, 6.1, 7.7]])
-			decal(['wet'], () => poly([[x0, y0, 0.004], [x1, y0, 0.004], [x1, y1, 0.004], [x0, y1, 0.004]], P.water, ' opacity="0.75"'));
+			decal(['wet'], () => poly([[x0, y0, 0.004], [x1, y0, 0.004], [x1, y1, 0.004], [x0, y1, 0.004]], P.cleanWater, ' opacity="0.9"'));
 		cart(box, 4.9, 6.9);
 		vacuum(box, 9.2, 5.2);
 		mopBucket(box, 1.7, 6.5);
@@ -357,8 +365,8 @@ const outputs = [
 	['services/zabudowy.svg', buildScene({ bookcase: true, focus: has('joinery') }), 'Wyróżnione zabudowy i meble na wymiar'],
 	['services/malowanie-podlogi.svg', buildScene({ furniture: false, painting: true }), 'Malowanie ścian i układanie podłóg'],
 	['services/nadzor.svg', buildScene({ pins: true }), 'Mieszkanie z zaznaczonymi etapami prac'],
-	['cleaning/hero.svg', buildScene({ tidy: true }), 'Ilustracja mieszkania w trakcie sprzątania'],
-	['cleaning/po-remoncie.svg', buildScene({ furniture: false, cleaning: true }), 'Sprzątanie mieszkania po remoncie'],
+	['cleaning/hero.svg', buildScene({ tidy: true, soften: true }), 'Ilustracja mieszkania w trakcie sprzątania'],
+	['cleaning/po-remoncie.svg', buildScene({ furniture: false, cleaning: true, soften: true }), 'Sprzątanie mieszkania po remoncie'],
 ];
 
 mkdirSync(new URL('../public/services/', import.meta.url), { recursive: true });

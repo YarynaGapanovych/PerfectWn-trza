@@ -23,6 +23,11 @@ export const P = {
 	leafDark: '#6a7562',
 	wallFace: '#f4f3ef',
 	sofa: '#c9c7c2',
+	// "Clean" accent for cleaning tools, wet floor and sparkles (cleaning page only)
+	aqua: '#3bb4be',
+	aquaLight: '#a6dfe3',
+	aquaDark: '#24868f',
+	cleanWater: '#cdeef0',
 };
 
 // ---------- scene dimensions (metres) ----------
@@ -51,6 +56,14 @@ export const fade = (hex) => {
 	const [r, g, b] = hex2rgb(hex);
 	const l = 0.3 * r + 0.59 * g + 0.11 * b;
 	return mix(rgb2hex([l, l, l]), '#efeeea', 0.74);
+};
+
+// Mild version of `fade` for the cleaning scenes: the room stays recognisable but steps back,
+// so the aqua cleaning tools are the focus.
+export const soften = (hex) => {
+	const [r, g, b] = hex2rgb(hex);
+	const l = 0.3 * r + 0.59 * g + 0.11 * b;
+	return mix(mix(hex, rgb2hex([l, l, l]), 0.35), '#f4f3ef', 0.3);
 };
 
 export const poly = (pts, fill, extra = '') =>
@@ -175,44 +188,44 @@ ${body}
 
 /** Mop bucket on wheels with a mop leaning out of it. */
 export function mopBucket(box, x, y) {
-	box(['clean'], x, x + 0.55, y, y + 0.42, 0.06, 0.42, P.bronze, {
-		extra: () => flat(x + 0.06, x + 0.49, y + 0.06, y + 0.36, 0.42, P.water),
+	box(['clean'], x, x + 0.55, y, y + 0.42, 0.06, 0.42, P.aqua, {
+		extra: () => flat(x + 0.06, x + 0.49, y + 0.06, y + 0.36, 0.42, P.cleanWater),
 	});
 	for (const [wx, wy] of [[x + 0.04, y + 0.04], [x + 0.43, y + 0.04], [x + 0.04, y + 0.3], [x + 0.43, y + 0.3]])
-		box(['clean'], wx, wx + 0.08, wy, wy + 0.08, 0, 0.06, P.charcoal);
+		box(['clean'], wx, wx + 0.08, wy, wy + 0.08, 0, 0.06, P.aquaDark);
 	// wringer + mop handle
-	box(['clean'], x + 0.38, x + 0.55, y + 0.08, y + 0.34, 0.42, 0.56, P.charcoal);
-	box(['clean'], x + 0.22, x + 0.28, y + 0.18, y + 0.24, 0.3, 1.45, P.silver);
+	box(['clean'], x + 0.38, x + 0.55, y + 0.08, y + 0.34, 0.42, 0.56, P.aquaDark);
+	box(['clean'], x + 0.22, x + 0.28, y + 0.18, y + 0.24, 0.3, 1.45, P.white);
 }
 
 /** Folding "wet floor" A-frame sign. */
 export function wetSign(box, x, y) {
-	box(['clean'], x, x + 0.06, y, y + 0.42, 0, 0.62, P.bronze, {
+	box(['clean'], x, x + 0.06, y, y + 0.42, 0, 0.62, P.aqua, {
 		extra: () => line([x + 0.06, y + 0.21, 0.2], [x + 0.06, y + 0.21, 0.42], P.white, 2.2) + poly([[x + 0.061, y + 0.12, 0.47], [x + 0.061, y + 0.3, 0.47], [x + 0.061, y + 0.21, 0.56]], P.white),
 	});
-	box(['clean'], x - 0.22, x - 0.16, y, y + 0.42, 0, 0.5, shade(P.bronze, 0.85));
+	box(['clean'], x - 0.22, x - 0.16, y, y + 0.42, 0, 0.5, P.aquaDark);
 }
 
 /** Cleaning trolley: frame, bin bag, bucket and bottles. */
 export function cart(box, x, y) {
-	box(['clean'], x, x + 0.9, y, y + 0.5, 0.08, 0.14, P.charcoal);
+	box(['clean'], x, x + 0.9, y, y + 0.5, 0.08, 0.14, P.aquaDark);
 	for (const [wx, wy] of [[x + 0.04, y + 0.04], [x + 0.78, y + 0.04], [x + 0.04, y + 0.38], [x + 0.78, y + 0.38]])
 		box(['clean'], wx, wx + 0.08, wy, wy + 0.08, 0, 0.08, P.charcoal);
-	box(['clean'], x, x + 0.06, y, y + 0.5, 0.14, 1.0, P.charcoal);
-	box(['clean'], x, x + 0.9, y, y + 0.06, 0.9, 0.96, P.charcoal);
-	box(['clean'], x + 0.08, x + 0.42, y + 0.08, y + 0.44, 0.14, 0.72, P.stone); // bin bag
-	box(['clean'], x + 0.5, x + 0.86, y + 0.1, y + 0.42, 0.14, 0.44, P.bronze, { extra: () => flat(x + 0.55, x + 0.81, y + 0.15, y + 0.37, 0.44, P.water) });
+	box(['clean'], x, x + 0.06, y, y + 0.5, 0.14, 1.0, P.aquaDark);
+	box(['clean'], x, x + 0.9, y, y + 0.06, 0.9, 0.96, P.aquaDark);
+	box(['clean'], x + 0.08, x + 0.42, y + 0.08, y + 0.44, 0.14, 0.72, P.aquaLight); // bin bag
+	box(['clean'], x + 0.5, x + 0.86, y + 0.1, y + 0.42, 0.14, 0.44, P.aqua, { extra: () => flat(x + 0.55, x + 0.81, y + 0.15, y + 0.37, 0.44, P.cleanWater) });
 	box(['clean'], x + 0.52, x + 0.62, y + 0.14, y + 0.24, 0.96, 1.18, P.white);
-	box(['clean'], x + 0.68, x + 0.78, y + 0.14, y + 0.24, 0.96, 1.14, P.bronze);
-	box(['clean'], x + 0.2, x + 0.26, y + 0.2, y + 0.26, 0.72, 1.55, P.silver); // broom handle
+	box(['clean'], x + 0.68, x + 0.78, y + 0.14, y + 0.24, 0.96, 1.14, P.aqua);
+	box(['clean'], x + 0.2, x + 0.26, y + 0.2, y + 0.26, 0.72, 1.55, P.white); // broom handle
 }
 
 /** Canister vacuum cleaner with hose and floor nozzle. */
 export function vacuum(box, x, y) {
-	box(['clean'], x, x + 0.5, y, y + 0.34, 0, 0.3, P.charcoal, { top: '#3a3a3a' });
-	box(['clean'], x + 0.06, x + 0.18, y + 0.08, y + 0.26, 0.3, 0.36, P.bronze);
+	box(['clean'], x, x + 0.5, y, y + 0.34, 0, 0.3, P.aqua, { top: P.aquaLight });
+	box(['clean'], x + 0.06, x + 0.18, y + 0.08, y + 0.26, 0.3, 0.36, P.aquaDark);
 	box(['clean'], x - 0.55, x - 0.05, y + 0.12, y + 0.2, 0.04, 0.09, P.silver); // hose on the floor
-	box(['clean'], x - 0.85, x - 0.55, y + 0.02, y + 0.3, 0, 0.06, P.charcoal); // nozzle
+	box(['clean'], x - 0.85, x - 0.55, y + 0.02, y + 0.3, 0, 0.06, P.aquaDark); // nozzle
 	box(['clean'], x - 0.75, x - 0.7, y + 0.14, y + 0.19, 0.06, 0.95, P.silver); // wand
 }
 
@@ -223,7 +236,7 @@ export function sparkles(points) {
 			const [cx, cy] = proj([x, y, z]);
 			const k = r * 0.28;
 			const d = `M${fmt(cx)} ${fmt(cy - r)} L${fmt(cx + k)} ${fmt(cy - k)} L${fmt(cx + r)} ${fmt(cy)} L${fmt(cx + k)} ${fmt(cy + k)} L${fmt(cx)} ${fmt(cy + r)} L${fmt(cx - k)} ${fmt(cy + k)} L${fmt(cx - r)} ${fmt(cy)} L${fmt(cx - k)} ${fmt(cy - k)} Z`;
-			return `<path d="${d}" fill="${P.bronze}" stroke="${P.white}" stroke-width="1.5" stroke-linejoin="round"/>`;
+			return `<path d="${d}" fill="${P.aqua}" stroke="${P.white}" stroke-width="1.5" stroke-linejoin="round"/>`;
 		})
 		.join('');
 }

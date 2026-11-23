@@ -40,7 +40,6 @@ const selected = first.values.includes(Astro.props.service ?? '') ? Astro.props.
 // Separate subjects so the two kinds of enquiry are easy to tell apart in the inbox.
 const subject = cleaning ? 'Nowe zapytanie — sprzątanie | PerfectWnętrza' : 'Nowe zapytanie — remont | PerfectWnętrza';
 
-const contactWays = ['Telefon', 'E-mail', ...(whatsappHref ? ['WhatsApp'] : [])].map((value) => ({ value, label: c.contactWays[value] }));
 
 // Web3Forms delivers submissions to all.perfectwnetrza@gmail.com (key is tied to that inbox).
 // Set PUBLIC_WEB3FORMS_KEY in .env locally and in Vercel's environment variables.
@@ -134,7 +133,6 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 				<span>{c.message}</span>
 				<textarea name="Wiadomość" rows="5" placeholder={cleaning ? cl.messagePlaceholder : c.messagePlaceholder} required></textarea>
 			</label>
-			<Select name="Preferowany kontakt" label={c.contactWay} options={contactWays} value="Telefon" />
 			{!cleaning && <p class="hint">
 				{c.hintBefore} <a href={`mailto:${site.email}`}>{site.email}</a>{whatsappHref && <> {c.hintOr} <a href={whatsappHref} target="_blank" rel="noopener">WhatsApp</a></>} {c.hintAfter}
 			</p>}
