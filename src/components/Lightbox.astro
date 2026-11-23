@@ -3,15 +3,18 @@
  * Fullscreen photo viewer. Opens for any <a data-lightbox href="large.webp"> on the page.
  * Keyboard: ← → Esc. Touch: swipe left/right, swipe down to close.
  */
+import { getLang, useT } from '../i18n';
+
+const t = useT(getLang(Astro.url)).lightbox;
 ---
 
-<dialog class="lightbox" aria-label="Podgląd zdjęcia">
+<dialog class="lightbox" aria-label={t.dialog}>
 	<figure>
 		<img alt="" />
 	</figure>
-	<button class="lb-btn lb-close" type="button" aria-label="Zamknij">×</button>
-	<button class="lb-btn lb-prev" type="button" aria-label="Poprzednie zdjęcie">‹</button>
-	<button class="lb-btn lb-next" type="button" aria-label="Następne zdjęcie">›</button>
+	<button class="lb-btn lb-close" type="button" aria-label={t.close}>×</button>
+	<button class="lb-btn lb-prev" type="button" aria-label={t.prev}>‹</button>
+	<button class="lb-btn lb-next" type="button" aria-label={t.next}>›</button>
 	<span class="lb-counter" aria-live="polite"></span>
 </dialog>
 

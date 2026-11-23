@@ -1,0 +1,152 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import Steps from '../components/Steps.astro';
+import PageHero from '../components/PageHero.astro';
+import Reviews from '../components/Reviews.astro';
+import Faq from '../components/Faq.astro';
+import { getLang, localize, useT } from '../i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const c = t.cleaning;
+
+// Only list services PerfectWnętrza actually offers. Text: i18n dictionaries (cleaning.cards, same order).
+const meta: { image: string; main?: boolean; page?: string }[] = [
+	{ image: '/cleaning/klatka.svg', main: true },
+	{ image: '/cleaning/po-remoncie.svg' },
+	{ image: '/cleaning/komercyjne.svg' },
+	{ image: '/cleaning/niekomercyjne.svg' },
+	{ image: '/cleaning/najem.svg', page: 'sprzatanie-mieszkan-na-doby' },
+];
+const services = c.cards.map((card, i) => ({
+	...card,
+	...meta[i],
+	href: meta[i].page ? localize(`/uslugi/${meta[i].page}/`, lang) : undefined,
+}));
+---
+
+<Layout title={c.metaTitle} description={c.metaDescription}>
+	<Header />
+	<main>
+		<PageHero
+			eyebrow={c.eyebrow}
+			title={c.title}
+			titleAccent={c.titleAccent}
+			lead={c.lead}
+			image="/cleaning/hero.svg"
+			alt={c.heroAlt}
+			badge={{ small: c.badgeSmall, big: c.badgeBig }}
+			secondary={{ href: '#zakres', label: t.common.seeScope }}
+		/>
+
+		<section class="section offer" id="zakres">
+			<div class="container">
+				<span class="eyebrow">{c.offerEyebrow}</span>
+				<h2 class="section-title">{c.offerTitle}</h2>
+
+				<ul class="cards">
+					{
+						services.map((s, i) => (
+							<li class:list={['card', { main: s.main }]}>
+								<img class="illus" src={s.image} alt={s.alt} width="779" height="620" loading="lazy" />
+								<span class="num">{String(i + 1).padStart(2, '0')}</span>
+								<h3>{s.title}</h3>
+								<p>{s.text}</p>
+								{s.href && <a class="more" href={s.href}>{t.common.learnMore}</a>}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</section>
+
+		<Steps kind="cleaning" />
+
+		<Reviews topic="cleaning" />
+
+		<Faq items={t.faq.cleaning} />
+
+		<Contact service="Sprzątanie" />
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	.offer {
+		background: var(--surface);
+	}
+	.cards {
+		list-style: none;
+		margin: 56px 0 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		border-top: 1px solid var(--line);
+		border-left: 1px solid var(--line);
+	}
+	.card {
+		padding: 40px 36px 44px;
+		border-right: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		transition: background 0.25s;
+	}
+	.card:hover,
+	.card.main {
+		background: var(--bg);
+	}
+	/* Stairwell cleaning is the key service: bronze line on top. */
+	.card.main {
+		box-shadow: inset 0 3px 0 var(--accent);
+	}
+	.illus {
+		width: calc(100% + 24px);
+		max-width: none;
+		height: auto;
+		margin: -12px -12px 20px;
+		transition: transform 0.35s ease;
+	}
+	.card:hover .illus {
+		transform: translateY(-4px);
+	}
+	.card .num {
+		display: block;
+		font-family: var(--font-serif);
+		font-size: 18px;
+		color: var(--accent);
+		margin-bottom: 12px;
+	}
+	.card h3 {
+		font-size: 22px;
+		font-weight: 400;
+		margin-bottom: 14px;
+	}
+	.card p {
+		color: var(--muted);
+		font-size: 15px;
+	}
+	.more {
+		display: inline-block;
+		margin-top: 18px;
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--accent-dark);
+	}
+	.more:hover {
+		color: var(--ink);
+	}
+
+	@media (max-width: 600px) {
+		.cards {
+			grid-template-columns: 1fr;
+		}
+		.card {
+			padding: 32px 24px;
+		}
+	}
+</style>

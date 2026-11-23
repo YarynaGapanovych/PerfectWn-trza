@@ -1,0 +1,16 @@
+---
+import ProjectPage from '../../../views/ProjectPage.astro';
+import { langs, defaultLang } from '../../../i18n';
+import { projectPaths, type Project } from '../../../lib/portfolio';
+
+export async function getStaticPaths() {
+	const paths = await projectPaths();
+	return langs
+		.filter((l) => l !== defaultLang)
+		.flatMap((lang) => paths.map((p) => ({ ...p, params: { ...p.params, lang } })));
+}
+
+const { project, prev, next } = Astro.props as { project: Project; prev: Project; next: Project };
+---
+
+<ProjectPage project={project} prev={prev} next={next} />

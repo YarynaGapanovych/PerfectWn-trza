@@ -1,25 +1,40 @@
 ---
+import { getLang, langs, langLabels, langNames, localize, useT } from '../i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
 const links = [
-	{ href: '/#uslugi', label: 'Usługi' },
-	{ href: '/#realizacje', label: 'Realizacje' },
-	{ href: '/sprzatanie/', label: 'Sprzątanie' },
-	{ href: '/#kontakt', label: 'Kontakt' },
+	{ href: localize('/#uslugi', lang), label: t.nav.services },
+	{ href: localize('/#realizacje', lang), label: t.nav.projects },
+	{ href: localize('/sprzatanie/', lang), label: t.nav.cleaning },
+	{ href: localize('/#kontakt', lang), label: t.nav.contact },
 ];
+// The same page in each language (all languages share the same slugs).
+const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname, l) }));
 ---
 
 <header class="header">
 	<div class="container header-inner">
-		<a href="/" class="logo" aria-label="PerfectWnętrza — strona główna">
+		<a href={localize('/', lang)} class="logo" aria-label={t.common.home}>
 			<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" />
 		</a>
 
-		<button class="menu-toggle" aria-label="Otwórz menu" aria-expanded="false" aria-controls="main-nav">
+		<button class="menu-toggle" aria-label={t.nav.openMenu} aria-expanded="false" aria-controls="main-nav">
 			<span></span><span></span>
 		</button>
 
 		<nav class="nav" id="main-nav">
 			{links.map((l) => <a href={l.href}>{l.label}</a>)}
-			<a href="/#kontakt" class="btn btn-primary nav-cta">Bezpłatna wycena</a>
+			<div class="lang" role="group" aria-label={t.common.language}>
+				{
+					switcher.map((s) => (
+						<a href={s.href} hreflang={s.lang} lang={s.lang} aria-label={langNames[s.lang]} aria-current={s.lang === lang ? 'true' : undefined}>
+							{langLabels[s.lang]}
+						</a>
+					))
+				}
+			</div>
+			<a href={localize('/#kontakt', lang)} class="btn btn-primary nav-cta">{t.common.freeQuote}</a>
 		</nav>
 	</div>
 </header>
@@ -65,6 +80,7 @@ const links = [
 	}
 	.logo {
 		display: block;
+		flex: none;
 	}
 	.logo img {
 		height: 46px;
@@ -73,7 +89,26 @@ const links = [
 	.nav {
 		display: flex;
 		align-items: center;
-		gap: 36px;
+		gap: 30px;
+	}
+	.nav a:not(.btn) {
+		white-space: nowrap;
+	}
+	/* Language switcher: PL · EN · UA */
+	.nav .lang {
+		display: flex;
+		gap: 2px;
+		padding-left: 24px;
+		border-left: 1px solid rgba(255, 255, 255, 0.15);
+	}
+	.nav .lang a {
+		padding: 4px 6px;
+		font-size: 12px;
+		letter-spacing: 0.1em;
+		border-radius: var(--radius);
+	}
+	.nav .lang a[aria-current] {
+		color: var(--bronze);
 	}
 	.nav a:not(.btn) {
 		font-size: 14px;
@@ -87,6 +122,7 @@ const links = [
 		color: var(--cream);
 	}
 	.nav-cta {
+		white-space: nowrap;
 		padding: 11px 20px;
 		background: var(--bronze);
 		border-color: var(--bronze);
@@ -120,7 +156,8 @@ const links = [
 		top: 24px;
 	}
 
-	@media (max-width: 760px) {
+	/* Menu button below 1080px: longer English/Ukrainian labels don't fit in one row. */
+	@media (max-width: 1080px) {
 		.menu-toggle {
 			display: block;
 		}
@@ -132,7 +169,7 @@ const links = [
 			flex-direction: column;
 			align-items: stretch;
 			gap: 0;
-			padding: 8px 16px 24px;
+			padding: 8px 24px 24px;
 			background: var(--charcoal);
 			border-top: 1px solid rgba(255, 255, 255, 0.08);
 			display: none;
@@ -151,8 +188,23 @@ const links = [
 			margin-top: 20px;
 			justify-content: center;
 		}
+		.nav .lang {
+			padding: 16px 0 0;
+			border-left: 0;
+			gap: 8px;
+		}
+		.nav .lang a:not(.btn) {
+			padding: 8px 14px;
+			border: 1px solid rgba(255, 255, 255, 0.15);
+		}
 		.header.is-open .nav {
 			display: flex;
+		}
+	}
+	@media (max-width: 720px) {
+		.nav {
+			padding-left: 16px;
+			padding-right: 16px;
 		}
 		.header.is-open .menu-toggle span:first-child {
 			top: 19px;

@@ -1,55 +1,32 @@
 ---
-const services = [
-	{
-		title: 'Wykończenia pod klucz',
-		image: '/services/wykonczenia.svg',
-		alt: 'Mieszkanie wykończone pod klucz',
-		text: 'Kompleksowa realizacja: od gładzi i podłóg, przez łazienki, po montaż oświetlenia i drzwi.',
-	},
-	{
-		title: 'Remonty i modernizacje',
-		image: '/services/remonty.svg',
-		alt: 'Mieszkanie w trakcie remontu',
-		text: 'Odświeżenie lub pełna przebudowa mieszkania, domu czy lokalu użytkowego — bez niespodzianek.',
-	},
-	{
-		title: 'Łazienki i kuchnie',
-		image: '/services/lazienki-kuchnie.svg',
-		alt: 'Wyróżniona łazienka i aneks kuchenny',
-		text: 'Precyzyjne prace glazurnicze, zabudowy na wymiar oraz instalacje wykonane zgodnie ze sztuką.',
-	},
-	{
-		title: 'Zabudowy i stolarka',
-		image: '/services/zabudowy.svg',
-		alt: 'Wyróżnione zabudowy i meble na wymiar',
-		text: 'Meble na wymiar, garderoby, sufity podwieszane i ściany z płyt g-k idealnie wpasowane w przestrzeń.',
-	},
-	{
-		title: 'Malowanie i podłogi',
-		image: '/services/malowanie-podlogi.svg',
-		alt: 'Malowanie ścian i układanie podłóg',
-		text: 'Gładzie, malowanie ścian i sufitów oraz montaż paneli, desek i płytek — równo i czysto.',
-	},
-	{
-		title: 'Nadzór i koordynacja',
-		image: '/services/nadzor.svg',
-		alt: 'Mieszkanie z zaznaczonymi etapami prac',
-		text: 'Jeden opiekun zlecenia, jasny harmonogram i stały kontakt na każdym etapie prac.',
-	},
+import { getLang, localize, useT } from '../i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang).services;
+// Illustration and landing page(s) per card; titles and texts come from the dictionary (same order).
+const meta = [
+	{ image: '/services/wykonczenia.svg', pages: ['wykonczenie-mieszkan'] },
+	{ image: '/services/remonty.svg', pages: ['remont-mieszkania'] },
+	{ image: '/services/lazienki-kuchnie.svg', pages: ['remont-lazienki', 'remont-kuchni'] },
+	{ image: '/services/zabudowy.svg', pages: [] },
+	{ image: '/services/malowanie-podlogi.svg', pages: [] },
+	{ image: '/services/nadzor.svg', pages: [] },
 ];
+const services = t.cards.map((c, i) => ({
+	...c,
+	image: meta[i].image,
+	links: meta[i].pages.map((slug, j) => ({ href: localize(`/uslugi/${slug}/`, lang), label: c.links[j] })),
+}));
 ---
 
 <section class="section services" id="uslugi">
 	<div class="container">
 		<div class="head">
 			<div>
-				<span class="eyebrow">Usługi</span>
-				<h2 class="section-title">Wszystko, czego potrzebuje<br />Twoje wnętrze</h2>
+				<span class="eyebrow">{t.eyebrow}</span>
+				<h2 class="section-title">{t.titleLines[0]}<br />{t.titleLines[1]}</h2>
 			</div>
-			<p>
-				Zajmujemy się całym procesem — od pierwszej wizyty i wyceny po sprzątanie po remoncie. Ty
-				wybierasz zakres, my dbamy o jakość i terminy.
-			</p>
+			<p>{t.intro}</p>
 		</div>
 
 		<ol class="grid">
@@ -60,17 +37,24 @@ const services = [
 						<span class="num">{String(i + 1).padStart(2, '0')}</span>
 						<h3>{s.title}</h3>
 						<p>{s.text}</p>
+						{s.links.length > 0 && (
+							<div class="more">
+								{s.links.map((l) => (
+									<a href={l.href}>{l.label} →</a>
+								))}
+							</div>
+						)}
 					</li>
 				))
 			}
 		</ol>
 
-		<a href="/sprzatanie/" class="cleaning">
+		<a href={localize('/sprzatanie/', lang)} class="cleaning">
 			<span>
-				<span class="eyebrow">Nowość · Sprzątanie</span>
-				<strong>Sprzątamy też klatki schodowe, obiekty komercyjne i niekomercyjne oraz wnętrza po remoncie.</strong>
+				<span class="eyebrow">{t.cleaningEyebrow}</span>
+				<strong>{t.cleaningText}</strong>
 			</span>
-			<span class="cleaning-cta">Zobacz ofertę →</span>
+			<span class="cleaning-cta">{t.cleaningCta}</span>
 		</a>
 	</div>
 </section>
@@ -134,6 +118,23 @@ const services = [
 	.card p {
 		color: var(--muted);
 		font-size: 15px;
+	}
+	.more {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px 20px;
+		margin-top: 18px;
+	}
+	.more a {
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--accent-dark);
+	}
+	.more a:hover {
+		color: var(--ink);
 	}
 
 	.cleaning {

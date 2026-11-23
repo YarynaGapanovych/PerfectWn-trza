@@ -4,6 +4,9 @@ category: biuro
 folder: biuro
 featured: false
 order: 8
+translations:
+  en: { title: 'Office preparation' }
+  uk: { title: 'Підготовка офісу' }
 draft: true
 photos:
   - biuro-12.jpg

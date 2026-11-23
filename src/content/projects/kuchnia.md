@@ -4,6 +4,9 @@ category: kuchnia
 folder: kuchnia
 featured: true
 order: 2
+translations:
+  en: { title: 'Kitchen' }
+  uk: { title: 'Кухня' }
 photos:
   - kuchnia-03.jpg
   - kuchnia-04.jpg

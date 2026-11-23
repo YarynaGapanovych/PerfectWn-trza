@@ -1,12 +1,19 @@
 ---
 import Select from './Select.astro';
+import { site, telHref, whatsappHref } from '../data/site';
+import { getLang, langNames, localize, useT } from '../i18n';
 
 interface Props {
-	/** Option pre-selected in "Rodzaj prac" (must match one of the options). */
+	/** Work type pre-selected in "Rodzaj prac" — one of SERVICE_VALUES (Polish). */
 	service?: string;
 }
 
-const services = [
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const c = t.contact;
+
+// Values sent to the inbox stay in Polish; visitors see them in their language (same order).
+const SERVICE_VALUES = [
 	'Wykończenie pod klucz',
 	'Malowanie i podłogi',
 	'Remont / modernizacja',
@@ -15,14 +22,10 @@ const services = [
 	'Sprzątanie',
 	'Inne',
 ];
-const { service = services[0] } = Astro.props;
+const services = SERVICE_VALUES.map((value, i) => ({ value, label: c.workTypes[i] }));
+const { service = SERVICE_VALUES[0] } = Astro.props;
 
-const contact = {
-	phone: '+48 791 567 011',
-	email: 'contact@perfectwnetrza.pl',
-	address: 'Kraków i okolice',
-	hours: 'Pon–Pt 8:00–18:00',
-};
+const contactWays = ['Telefon', 'E-mail', ...(whatsappHref ? ['WhatsApp'] : [])].map((value) => ({ value, label: c.contactWays[value] }));
 
 // Web3Forms delivers submissions to all.perfectwnetrza@gmail.com (key is tied to that inbox).
 // Set PUBLIC_WEB3FORMS_KEY in .env locally and in Vercel's environment variables.
@@ -32,29 +35,36 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 <section class="section contact" id="kontakt">
 	<div class="container grid">
 		<div class="info">
-			<span class="eyebrow">Kontakt</span>
-			<h2 class="section-title">Porozmawiajmy o Twoim wnętrzu</h2>
-			<p class="intro">
-				Opisz krótko, jakie prace planujesz — odezwiemy się w ciągu 24 godzin i umówimy bezpłatną
-				konsultację oraz wycenę.
-			</p>
+			<span class="eyebrow">{c.eyebrow}</span>
+			<h2 class="section-title">{c.title}</h2>
+			<p class="intro">{c.intro}</p>
 
 			<dl class="details">
 				<div>
-					<dt>Telefon</dt>
-					<dd><a href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a></dd>
+					<dt>{c.phone}</dt>
+					<dd><a href={telHref}>{site.phone}</a></dd>
+				</div>
+				{
+					whatsappHref && (
+						<div>
+							<dt>{c.whatsapp}</dt>
+							<dd>
+								<a href={whatsappHref} target="_blank" rel="noopener">{c.whatsappLink}</a>
+							</dd>
+						</div>
+					)
+				}
+				<div>
+					<dt>{c.email}</dt>
+					<dd><a href={`mailto:${site.email}`}>{site.email}</a></dd>
 				</div>
 				<div>
-					<dt>E-mail</dt>
-					<dd><a href={`mailto:${contact.email}`}>{contact.email}</a></dd>
+					<dt>{c.address}</dt>
+					<dd>{t.common.area}</dd>
 				</div>
 				<div>
-					<dt>Adres</dt>
-					<dd>{contact.address}</dd>
-				</div>
-				<div>
-					<dt>Godziny</dt>
-					<dd>{contact.hours}</dd>
+					<dt>{c.hours}</dt>
+					<dd>{t.common.hours}</dd>
 				</div>
 			</dl>
 		</div>
@@ -64,51 +74,56 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 			method="post"
 			action="https://api.web3forms.com/submit"
 			data-contact-form
-			data-phone={contact.phone}
-			data-email={contact.email}
+			data-phone={site.phone}
+			data-email={site.email}
+			data-sending={c.sending}
+			data-success={c.success}
+			data-error={c.errorBefore}
+			data-or={c.or}
 		>
 			<input type="hidden" name="access_key" value={formKey ?? ''} />
 			<input type="hidden" name="subject" value="Nowe zapytanie ze strony PerfectWnętrza" />
 			<input type="hidden" name="from_name" value="PerfectWnętrza — formularz" />
+			<!-- Tells you which language version the enquiry came from. -->
+			<input type="hidden" name="Język strony" value={langNames[lang]} />
 			<!-- Honeypot: hidden from people, bots tick it and get filtered out. -->
 			<input type="checkbox" name="botcheck" class="botcheck" tabindex="-1" autocomplete="off" aria-hidden="true" />
 
 			{
 				!formKey && (
 					<p class="form-status is-error" role="status">
-						Formularz jest chwilowo niedostępny — zadzwoń pod{' '}
-						<a href={`tel:${contact.phone.replace(/\s/g, '')}`}>{contact.phone}</a> lub napisz na{' '}
-						<a href={`mailto:${contact.email}`}>{contact.email}</a>.
+						{c.unavailableBefore} <a href={telHref}>{site.phone}</a> {c.or} <a href={`mailto:${site.email}`}>{site.email}</a>.
 					</p>
 				)
 			}
 
 			<div class="row">
 				<label>
-					<span>Imię i nazwisko</span>
+					<span>{c.name}</span>
 					<input type="text" name="name" autocomplete="name" required />
 				</label>
 				<label>
-					<span>Telefon</span>
+					<span>{c.phone}</span>
 					<input type="tel" name="Telefon" autocomplete="tel" />
 				</label>
 			</div>
 			<label>
-				<span>E-mail</span>
+				<span>{c.email}</span>
 				<input type="email" name="email" autocomplete="email" required />
 			</label>
-			<Select
-				name="Rodzaj prac"
-				label="Rodzaj prac"
-				options={services}
-				value={service}
-			/>
+			<Select name="Rodzaj prac" label={c.workType} options={services} value={service} />
 			<label>
-				<span>Wiadomość</span>
-				<textarea name="Wiadomość" rows="5" placeholder="Metraż, lokalizacja, oczekiwany termin…" required></textarea>
+				<span>{c.message}</span>
+				<textarea name="Wiadomość" rows="5" placeholder={c.messagePlaceholder} required></textarea>
 			</label>
-			<button type="submit" class="btn btn-primary" disabled={!formKey}>Wyślij zapytanie</button>
-			<p class="note">Wysyłając formularz, zgadzasz się na kontakt w sprawie zapytania.</p>
+			<Select name="Preferowany kontakt" label={c.contactWay} options={contactWays} value="Telefon" />
+			<p class="hint">
+				{c.hintBefore} <a href={`mailto:${site.email}`}>{site.email}</a>{whatsappHref && <> {c.hintOr} <a href={whatsappHref} target="_blank" rel="noopener">WhatsApp</a></>} {c.hintAfter}
+			</p>
+			<button type="submit" class="btn btn-primary" disabled={!formKey}>{c.submit}</button>
+			<p class="note">
+				{c.noteBefore} <a href={localize('/polityka-prywatnosci/', lang)}>{c.noteLink}</a>.
+			</p>
 			<p class="form-status" role="status" aria-live="polite" hidden></p>
 		</form>
 	</div>
@@ -121,7 +136,7 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 		const button = form.querySelector<HTMLButtonElement>('button[type="submit"]')!;
 		const status = form.querySelector<HTMLElement>('.form-status[aria-live]')!;
 		const label = button.textContent;
-		const { phone = '', email = '' } = form.dataset;
+		const { phone = '', email = '', sending = '', success = '', error = '', or = '' } = form.dataset;
 
 		const show = (kind: 'success' | 'error', html: string) => {
 			status.hidden = false;
@@ -132,7 +147,7 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 		form.addEventListener('submit', async (event) => {
 			event.preventDefault();
 			button.disabled = true;
-			button.textContent = 'Wysyłanie…';
+			button.textContent = sending;
 			status.hidden = true;
 
 			try {
@@ -145,13 +160,17 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 				if (!response.ok || !result.success) throw new Error(result.message || response.statusText);
 
 				form.reset();
-				show('success', '<strong>Dziękujemy!</strong> Wiadomość została wysłana — odezwiemy się w ciągu 24 godzin.');
+				// Analytics: count successful enquiries (no-op without analytics).
+				(window as unknown as { plausible?: (e: string, o?: object) => void }).plausible?.('Formularz', {
+					props: { page: location.pathname },
+				});
+				show('success', success);
 			} catch (error) {
 				console.error('Contact form error:', error);
 				show(
 					'error',
-					`Nie udało się wysłać wiadomości. Spróbuj ponownie albo zadzwoń pod ` +
-						`<a href="tel:${phone.replace(/\s/g, '')}">${phone}</a> lub napisz na ` +
+					`${error} ` +
+						`<a href="tel:${phone.replace(/\s/g, '')}">${phone}</a> ${or} ` +
 						`<a href="mailto:${email}">${email}</a>.`,
 				);
 			} finally {
@@ -260,6 +279,15 @@ const formKey = import.meta.env.PUBLIC_WEB3FORMS_KEY as string | undefined;
 	.note {
 		margin-top: -8px;
 		font-size: 12px;
+		color: var(--muted);
+	}
+	.note a,
+	.hint a {
+		color: inherit;
+	}
+	.hint {
+		margin-top: -6px;
+		font-size: 13px;
 		color: var(--muted);
 	}
 	.form-status {

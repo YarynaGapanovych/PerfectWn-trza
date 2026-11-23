@@ -4,6 +4,9 @@ category: łazienka
 folder: lazienki
 featured: false
 order: 9
+translations:
+  en: { title: 'Bathrooms — selected projects' }
+  uk: { title: 'Ванні кімнати — вибрані роботи' }
 draft: true
 photos:
   - lazienki-13.jpg

@@ -1,0 +1,17 @@
+---
+import ServicePage from '../../../views/ServicePage.astro';
+import { langs, defaultLang } from '../../../i18n';
+import { getServices, type ServiceEntry } from '../../../lib/services';
+
+export async function getStaticPaths() {
+	const paths = [];
+	for (const lang of langs.filter((l) => l !== defaultLang)) {
+		for (const service of await getServices(lang)) paths.push({ params: { lang, slug: service.slug }, props: { service } });
+	}
+	return paths;
+}
+
+const { service } = Astro.props as { service: ServiceEntry };
+---
+
+<ServicePage service={service} />

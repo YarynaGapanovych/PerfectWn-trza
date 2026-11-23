@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
-import { categoryLabels, countPhotos, getCover, type Project } from '../lib/portfolio';
+import { countPhotos, getCover, projectText, type Project } from '../lib/portfolio';
+import { getLang, localize, useT } from '../i18n';
 
 interface Props {
 	project: Project;
@@ -10,14 +11,16 @@ interface Props {
 }
 
 const { project, eager = false, large = false } = Astro.props;
-const { title, category, location } = project.data;
+const lang = getLang(Astro.url);
+const t = useT(lang).project;
+const { title, location } = projectText(project, lang);
+const { category } = project.data;
 const cover = await getCover(project);
 const count = countPhotos(project);
-const photoWord = count === 1 ? 'zdjęcie' : count % 10 >= 2 && count % 10 <= 4 && (count % 100 < 12 || count % 100 > 14) ? 'zdjęcia' : 'zdjęć';
 ---
 
 <li class="card">
-	<a href={`/realizacje/${project.id}/`}>
+	<a href={localize(`/realizacje/${project.id}/`, lang)}>
 		<div class="media">
 			{
 				cover && (
@@ -31,10 +34,10 @@ const photoWord = count === 1 ? 'zdjęcie' : count % 10 >= 2 && count % 10 <= 4 
 					/>
 				)
 			}
-			<span class="count">{count} {photoWord}</span>
+			<span class="count">{t.photos(count)}</span>
 		</div>
 		<div class="body">
-			<span class="cat">{categoryLabels[category]}</span>
+			<span class="cat">{t.categories[category]}</span>
 			<h3>{title}</h3>
 			{location && <p class="loc">{location}</p>}
 		</div>

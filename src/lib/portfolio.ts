@@ -1,5 +1,6 @@
 import type { ImageMetadata } from 'astro';
 import { getCollection, type CollectionEntry } from 'astro:content';
+import type { Lang } from '../i18n';
 
 export type Project = CollectionEntry<'projects'>;
 export type ProjectImage = { name: string; src: ImageMetadata };
@@ -10,14 +11,12 @@ const files = import.meta.glob<{ default: ImageMetadata }>(
 	'/src/assets/portfolio/**/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}',
 );
 
-export const categoryLabels: Record<Project['data']['category'], string> = {
-	łazienka: 'Łazienka',
-	kuchnia: 'Kuchnia',
-	mieszkanie: 'Mieszkanie',
-	lokal: 'Lokal użytkowy',
-	biuro: 'Biuro',
-	inne: 'Inne',
-};
+/** Title, location and scope of a project in the given language (falls back to Polish). */
+export function projectText(project: Project, lang: Lang) {
+	const { title, location, scope } = project.data;
+	const tr = lang === 'pl' ? undefined : project.data.translations?.[lang];
+	return { title: tr?.title ?? title, location: tr?.location ?? location, scope: tr?.scope ?? scope };
+}
 
 /** File names in a project folder, sorted (e.g. biuro-01.jpg, biuro-02.jpg…). Nothing is imported. */
 function folderFiles(folder: string): string[] {
@@ -70,4 +69,17 @@ export async function getProjects(): Promise<Project[]> {
 	return all
 		.filter((p) => !p.data.draft && selectedNames(p).length > 0)
 		.sort((a, b) => a.data.order - b.data.order || a.data.title.localeCompare(b.data.title));
+}
+
+/** getStaticPaths for project pages: every project with its neighbours for the prev/next links. */
+export async function projectPaths() {
+	const projects = await getProjects();
+	return projects.map((project, i) => ({
+		params: { slug: project.id },
+		props: {
+			project,
+			prev: projects[(i - 1 + projects.length) % projects.length],
+			next: projects[(i + 1) % projects.length],
+		},
+	}));
 }

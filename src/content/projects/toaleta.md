@@ -4,6 +4,9 @@ category: łazienka
 folder: toaleta
 featured: true
 order: 3
+translations:
+  en: { title: 'Toilet' }
+  uk: { title: 'Туалет' }
 photos:
   - toaleta-07.jpg
   - toaleta-05.jpg

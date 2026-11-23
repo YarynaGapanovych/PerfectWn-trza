@@ -1,14 +1,20 @@
 ---
 // Custom dropdown in the site's style. Submits its value through a hidden input,
 // so it works in forms like a native <select>.
+// An option is a plain string, or a submitted `value` shown to people as `label` (e.g. translated).
+type Option = string | { value: string; label: string };
+
 interface Props {
 	name: string;
 	label: string;
-	options: string[];
+	options: Option[];
 	value?: string;
 }
 
-const { name, label, options, value = options[0] } = Astro.props;
+const { name, label } = Astro.props;
+const options = Astro.props.options.map((o) => (typeof o === 'string' ? { value: o, label: o } : o));
+const value = Astro.props.value ?? options[0].value;
+const selectedLabel = options.find((o) => o.value === value)?.label ?? value;
 const id = `select-${name
 	.toLowerCase()
 	.normalize('NFD')
@@ -29,7 +35,7 @@ const id = `select-${name
 		aria-controls={`${id}-list`}
 		aria-labelledby={`${id}-label ${id}-trigger`}
 	>
-		<span class="select-value">{value}</span>
+		<span class="select-value">{selectedLabel}</span>
 		<svg class="select-chevron" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
 			<path d="M3 5.5l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
 		</svg>
@@ -42,10 +48,10 @@ const id = `select-${name
 					class="select-option"
 					id={`${id}-opt-${i}`}
 					role="option"
-					data-value={opt}
-					aria-selected={opt === value ? 'true' : 'false'}
+					data-value={opt.value}
+					aria-selected={opt.value === value ? 'true' : 'false'}
 				>
-					<span>{opt}</span>
+					<span>{opt.label}</span>
 					<svg class="select-check" width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
 						<path d="M2.5 7.5l3 3 6-7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
 					</svg>
@@ -91,7 +97,7 @@ const id = `select-${name
 		const choose = (i: number) => {
 			options.forEach((o, j) => o.setAttribute('aria-selected', String(j === i)));
 			input.value = options[i].dataset.value ?? '';
-			valueEl.textContent = input.value;
+			valueEl.textContent = options[i].querySelector('span')?.textContent ?? input.value;
 			input.dispatchEvent(new Event('change', { bubbles: true }));
 			close();
 		};
@@ -101,7 +107,7 @@ const id = `select-${name
 		root.closest('form')?.addEventListener('reset', () => {
 			options.forEach((o, j) => o.setAttribute('aria-selected', String(j === initial)));
 			input.value = options[initial].dataset.value ?? '';
-			valueEl.textContent = input.value;
+			valueEl.textContent = options[initial].querySelector('span')?.textContent ?? input.value;
 		});
 
 		trigger.addEventListener('click', () => (list.hidden ? open() : close()));

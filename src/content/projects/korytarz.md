@@ -4,6 +4,9 @@ category: mieszkanie
 folder: korytarz
 featured: true
 order: 1
+translations:
+  en: { title: 'Hallway' }
+  uk: { title: 'Коридор' }
 photos:
   - korytarz-02.jpg
   - korytarz-04.jpg

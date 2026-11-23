@@ -4,6 +4,9 @@ category: lokal
 folder: restauracja
 featured: false
 order: 7
+translations:
+  en: { title: 'Restaurant' }
+  uk: { title: 'Заклад громадського харчування' }
 draft: true
 photos:
   - restauracja-05.jpg

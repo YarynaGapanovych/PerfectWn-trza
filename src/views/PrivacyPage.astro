@@ -1,0 +1,89 @@
+---
+// Privacy policy (RODO / GDPR) for the contact form, hosting, fonts and analytics.
+// Company details come from src/data/site.ts → `company`. Have the final text checked before relying on it.
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { site } from '../data/site';
+import { getLang, useT } from '../i18n';
+
+const p = useT(getLang(Astro.url)).privacy;
+const { legalName, address, nip } = site.company;
+const companyReady = Boolean(legalName && address);
+const company = [legalName, address, nip && `NIP ${nip}`].filter(Boolean).join(', ');
+---
+
+<Layout title={p.metaTitle} description={p.metaDescription}>
+	<Header />
+	<main class="section">
+		<article class="container policy">
+			<span class="eyebrow">{p.eyebrow}</span>
+			<h1>{p.title}</h1>
+
+			<h2>{p.adminTitle}</h2>
+			<p class:list={{ todo: !companyReady }}>
+				{companyReady ? p.adminReady.replace('{company}', company) : p.adminPending}{' '}
+				<a href={`mailto:${site.email}`}>{site.email}</a>, {p.phoneShort} {site.phone}.
+			</p>
+
+			<h2>{p.dataTitle}</h2>
+			{p.data.map((para) => <p>{para}</p>)}
+
+			<h2>{p.recipientsTitle}</h2>
+			<p>{p.recipientsIntro}</p>
+			<ul>
+				{p.recipients.map((r) => <li>{r}</li>)}
+				{site.plausibleDomain && <li>{p.recipientAnalytics}</li>}
+			</ul>
+			<p>{p.recipientsOutro}</p>
+
+			<h2>{p.retentionTitle}</h2>
+			<p>{p.retention}</p>
+
+			<h2>{p.rightsTitle}</h2>
+			<p>{p.rights}</p>
+
+			<h2>{p.cookiesTitle}</h2>
+			<p>
+				{p.cookies}
+				{site.plausibleDomain && ` ${p.cookiesAnalytics}`}
+			</p>
+		</article>
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	.policy {
+		max-width: 780px;
+	}
+	h1 {
+		font-size: clamp(34px, 5vw, 52px);
+		margin-bottom: 40px;
+	}
+	h2 {
+		font-size: 21px;
+		font-weight: 400;
+		margin: 40px 0 12px;
+	}
+	p,
+	li {
+		color: var(--muted);
+		font-size: 16px;
+	}
+	p + p {
+		margin-top: 12px;
+	}
+	ul {
+		margin: 12px 0;
+		padding-left: 20px;
+	}
+	a {
+		color: var(--accent-dark);
+	}
+	.todo {
+		padding: 14px 16px;
+		background: var(--cream);
+		border-left: 3px solid var(--accent);
+	}
+</style>

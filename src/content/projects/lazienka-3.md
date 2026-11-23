@@ -4,6 +4,9 @@ category: łazienka
 folder: lazienka-3
 featured: true
 order: 4
+translations:
+  en: { title: 'Bathroom' }
+  uk: { title: 'Ванна кімната' }
 photos:
   - lazienka-3-05.jpg
   - lazienka-3-02.jpg

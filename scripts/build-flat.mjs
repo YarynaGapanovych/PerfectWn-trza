@@ -1,13 +1,14 @@
 // Generates isometric cutaway illustrations of a flat (living room, bedroom,
 // bathroom) in the PerfectWnętrza palette:
 //   public/flat.svg              — hero image
+//   public/cleaning/hero.svg     — cleaning page hero (furnished flat being cleaned)
 //   public/services/<name>.svg   — one per service, highlighting that work
 //   public/cleaning/po-remoncie.svg — cleaning after renovation (other cleaning
 //                                   scenes: scripts/build-cleaning.mjs)
 // Run: node scripts/build-flat.mjs
 import { mkdirSync, writeFileSync } from 'node:fs';
 
-import { P, W, D, H, T, proj, fmt, shade, fade, poly, flat, line, onWall, leaves, render, vw, vh, mopBucket, vacuum, wetSign, sparkles } from './iso.mjs';
+import { P, W, D, H, T, proj, fmt, shade, fade, poly, flat, line, onWall, leaves, render, vw, vh, mopBucket, vacuum, wetSign, cart, sparkles } from './iso.mjs';
 
 // ---------- layout constants (metres) ----------
 // W, D, H, T come from iso.mjs (shared frame)
@@ -26,6 +27,7 @@ const YP = 4.7; // partition: bedroom | bathroom
  * opts.pins         -> check-mark pins above each room
  * opts.keys         -> keys on the dining table
  * opts.cleaning     -> finished, empty flat being cleaned after the renovation
+ * opts.tidy         -> furnished flat during regular cleaning (cleaning page hero)
  */
 function buildScene(opts = {}) {
 	const furniture = opts.furniture !== false;
@@ -304,6 +306,29 @@ function buildScene(opts = {}) {
 		);
 	}
 
+	if (opts.tidy) {
+		// freshly mopped patches in the living room and bathroom
+		for (const [x0, x1, y0, y1] of [[5.0, 6.4, 5.0, 6.3], [8.9, 9.8, 4.9, 6.2], [1.3, 3.0, 6.1, 7.7]])
+			decal(['wet'], () => poly([[x0, y0, 0.004], [x1, y0, 0.004], [x1, y1, 0.004], [x0, y1, 0.004]], P.water, ' opacity="0.75"'));
+		cart(box, 4.9, 6.9);
+		vacuum(box, 9.2, 5.2);
+		mopBucket(box, 1.7, 6.5);
+		wetSign(box, 3.35, 6.6);
+		overlays.push(
+			sparkles([
+				[0.55, 1.55, 0.8, 11],
+				[1.7, 0, 1.75, 13],
+				[7.0, 2.3, 0.45, 10],
+				[7.6, 6.5, 0.85, 11],
+				[0.55, 6.4, 0.65, 10],
+				[2.15, 5.3, 0.9, 9],
+				[9.25, 0, 1.9, 13],
+				[5.6, 5.6, 0.05, 9],
+				[2.6, 2.3, 0.05, 9],
+			]),
+		);
+	}
+
 	// ----- pins -----
 	if (opts.pins) {
 		for (const [x, y] of [[2.0, 2.3], [2.4, 6.4], [7.2, 3.0], [7.6, 6.5]]) {
@@ -332,6 +357,7 @@ const outputs = [
 	['services/zabudowy.svg', buildScene({ bookcase: true, focus: has('joinery') }), 'Wyróżnione zabudowy i meble na wymiar'],
 	['services/malowanie-podlogi.svg', buildScene({ furniture: false, painting: true }), 'Malowanie ścian i układanie podłóg'],
 	['services/nadzor.svg', buildScene({ pins: true }), 'Mieszkanie z zaznaczonymi etapami prac'],
+	['cleaning/hero.svg', buildScene({ tidy: true }), 'Ilustracja mieszkania w trakcie sprzątania'],
 	['cleaning/po-remoncie.svg', buildScene({ furniture: false, cleaning: true }), 'Sprzątanie mieszkania po remoncie'],
 ];
 

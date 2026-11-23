@@ -1,0 +1,48 @@
+---
+// Trust strip under a hero: real numbers from src/data/site.ts (`stats`). Renders nothing while empty.
+import { site } from '../data/site';
+import { getLang } from '../i18n';
+
+const lang = getLang(Astro.url);
+---
+
+{
+	site.stats.length > 0 && (
+		<dl class="stats">
+			{site.stats.map((s) => (
+				<div>
+					<dt>{s.label[lang]}</dt>
+					<dd>{s.value}</dd>
+				</div>
+			))}
+		</dl>
+	)
+}
+
+<style>
+	.stats {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 16px 40px;
+		margin: 48px 0 0;
+		padding-top: 28px;
+		border-top: 1px solid var(--line);
+	}
+	.stats div {
+		display: flex;
+		flex-direction: column-reverse;
+	}
+	.stats dd {
+		margin: 0;
+		font-family: var(--font-serif);
+		font-size: 30px;
+		font-weight: 300;
+		line-height: 1.1;
+		color: var(--ink);
+	}
+	.stats dt {
+		margin-top: 4px;
+		font-size: 13px;
+		color: var(--muted);
+	}
+</style>
