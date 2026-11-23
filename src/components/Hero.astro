@@ -37,7 +37,12 @@ const t = useT(getLang(Astro.url)).hero;
 
 <style>
 	.hero {
-		padding: 72px 0 112px;
+		/* Fills the screen below the header, content centred vertically. */
+		min-height: calc(100vh - var(--header-h));
+		min-height: calc(100svh - var(--header-h));
+		display: flex;
+		align-items: center;
+		padding: 56px 0 72px;
 		overflow: hidden;
 	}
 	.hero-grid {

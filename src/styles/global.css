@@ -33,14 +33,21 @@
 }
 
 html {
+	/* Height of the sticky header: used by full-screen heroes and anchor jumps. */
+	--header-h: 80px;
 	scroll-behavior: smooth;
-	scroll-padding-top: 80px;
+	scroll-padding-top: var(--header-h);
 }
 
+@media (max-width: 1024px) {
+	html {
+		--header-h: 72px;
+	}
+}
 /* On phones the header has a second row (Remonty | Sprzątanie switch). */
 @media (max-width: 500px) {
 	html {
-		scroll-padding-top: 130px;
+		--header-h: 124px;
 	}
 }
 
