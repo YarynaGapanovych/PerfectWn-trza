@@ -72,14 +72,23 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 			<a href={servicesHref}>{t.nav.services}</a>
 			{mode === 'renovation' && <a href={L('/#realizacje')}>{t.nav.projects}</a>}
 			<a href={contactHref}>{t.nav.contact}</a>
-			<div class="lang" role="group" aria-label={t.common.language}>
-				{
-					switcher.map((s) => (
-						<a href={s.href} hreflang={s.lang} lang={s.lang} aria-label={langNames[s.lang]} aria-current={s.lang === lang ? 'true' : undefined}>
-							{langLabels[s.lang]}
-						</a>
-					))
-				}
+			<div class="lang">
+				<button class="lang-toggle" type="button" aria-expanded="false" aria-controls="lang-menu" aria-label={`${t.common.language}: ${langNames[lang]}`}>
+					{langLabels[lang]}
+					<svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true"><path d="M2 3.5l3 3 3-3" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" /></svg>
+				</button>
+				<ul class="lang-menu" id="lang-menu" aria-label={t.common.language}>
+					{
+						switcher.map((s) => (
+							<li>
+								<a href={s.href} hreflang={s.lang} lang={s.lang} aria-current={s.lang === lang ? 'true' : undefined}>
+									<span class="short">{langLabels[s.lang]}</span>
+									<span class="full">{langNames[s.lang]}</span>
+								</a>
+							</li>
+						))
+					}
+				</ul>
 			</div>
 		</nav>
 	</div>
@@ -97,8 +106,20 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 
 	toggle?.addEventListener('click', () => setMenu(!header?.classList.contains('is-open')));
 
+	// Language dropdown (desktop): opens on hover (CSS) and on click/tap or keyboard.
+	const langBox = document.querySelector<HTMLElement>('.lang');
+	const langToggle = langBox?.querySelector<HTMLButtonElement>('.lang-toggle');
+	const setLang = (open: boolean) => langToggle?.setAttribute('aria-expanded', String(open));
+	langToggle?.addEventListener('click', () => setLang(langToggle.getAttribute('aria-expanded') !== 'true'));
+	document.addEventListener('click', (e) => {
+		if (langBox && !langBox.contains(e.target as Node)) setLang(false);
+	});
+
 	document.addEventListener('keydown', (e) => {
-		if (e.key === 'Escape') setMenu(false);
+		if (e.key === 'Escape') {
+			setMenu(false);
+			setLang(false);
+		}
 	});
 	// Tapping anywhere outside the header closes the open menu.
 	document.addEventListener('click', (e) => {
@@ -125,8 +146,8 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	.header.is-scrolled {
 		box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
 	}
-	/* Logo on the left; menu and the section switch on the right (on tablets: switch and menu
-	   button). The header gets more room than page content. */
+	/* Logo on the left; on the right the section switch, then the menu (on tablets: switch and
+	   menu button). The header gets more room than page content. */
 	.header-inner {
 		position: relative;
 		max-width: 1320px;
@@ -149,7 +170,7 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 
 	/* Section switch: Remonty | Sprzątanie */
 	.sections {
-		grid-column: 3;
+		grid-column: 2;
 		grid-row: 1;
 		display: flex;
 		padding: 3px;
@@ -181,7 +202,7 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 	}
 
 	.nav {
-		grid-column: 2;
+		grid-column: 3;
 		grid-row: 1;
 		justify-self: end;
 		display: flex;
@@ -202,21 +223,83 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		color: var(--cream);
 	}
 
-	/* Language switcher: PL · EN · UA */
-	.nav .lang {
-		display: flex;
-		gap: 2px;
+	/* Language dropdown: "PL ▾" opening PL / EN / UA */
+	.lang {
+		position: relative;
 		padding-left: 20px;
 		border-left: 1px solid rgba(255, 255, 255, 0.15);
 	}
-	.nav .lang a {
-		padding: 4px 6px;
+	.lang-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		padding: 4px 2px;
+		font: inherit;
 		font-size: 12px;
 		letter-spacing: 0.1em;
-		border-radius: var(--radius);
-	}
-	.nav .lang a[aria-current] {
 		color: var(--bronze);
+		background: none;
+		border: 0;
+		cursor: pointer;
+	}
+	.lang-toggle svg {
+		transition: transform 0.2s;
+	}
+	.lang-menu {
+		position: absolute;
+		top: 100%;
+		right: -12px;
+		min-width: 170px;
+		margin: 0;
+		padding: 14px 0 0; /* bridges the gap so hover doesn't drop */
+		list-style: none;
+		visibility: hidden;
+		opacity: 0;
+		transform: translateY(-4px);
+		transition: opacity 0.15s, transform 0.15s, visibility 0.15s;
+	}
+	.lang-menu li {
+		background: var(--charcoal);
+	}
+	.lang-menu li:first-child {
+		padding-top: 6px;
+		border-top: 2px solid var(--bronze);
+		border-radius: var(--radius) var(--radius) 0 0;
+	}
+	.lang-menu li:last-child {
+		padding-bottom: 6px;
+		border-radius: 0 0 var(--radius) var(--radius);
+		box-shadow: 0 18px 32px rgba(0, 0, 0, 0.25);
+	}
+	.nav .lang-menu a {
+		display: flex;
+		align-items: baseline;
+		gap: 12px;
+		padding: 8px 16px;
+		font-size: 13px;
+		letter-spacing: 0.04em;
+		text-transform: none;
+	}
+	.lang-menu .short {
+		width: 22px;
+		font-size: 11px;
+		letter-spacing: 0.1em;
+		color: var(--stone);
+	}
+	.nav .lang-menu a[aria-current],
+	.nav .lang-menu a[aria-current] .short {
+		color: var(--bronze);
+	}
+	.lang:hover .lang-menu,
+	.lang:focus-within .lang-menu,
+	.lang-toggle[aria-expanded='true'] + .lang-menu {
+		visibility: visible;
+		opacity: 1;
+		transform: none;
+	}
+	.lang:hover .lang-toggle svg,
+	.lang-toggle[aria-expanded='true'] svg {
+		transform: rotate(180deg);
 	}
 
 	.menu-toggle {
@@ -246,11 +329,8 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 		top: 24px;
 	}
 
-	/* Below 1240px: the menu moves behind the menu button, next to the switch. */
-	@media (max-width: 1240px) {
-		.sections {
-			grid-column: 2;
-		}
+	/* Below 1024px: the menu moves behind the menu button, next to the switch. */
+	@media (max-width: 1024px) {
 		.header-inner {
 			height: 72px;
 		}
@@ -297,15 +377,48 @@ const switcher = langs.map((l) => ({ lang: l, href: localize(Astro.url.pathname,
 			padding: 14px 0;
 		}
 
-		.nav .lang {
+		/* In the menu the languages are shown as three buttons, not a dropdown. */
+		.lang {
 			order: 10;
 			padding: 16px 0 0;
 			border-left: 0;
-			gap: 8px;
 		}
-		.nav .lang a {
+		.lang-toggle {
+			display: none;
+		}
+		.lang-menu {
+			position: static;
+			display: flex;
+			gap: 8px;
+			min-width: 0;
+			padding: 0;
+			visibility: visible;
+			opacity: 1;
+			transform: none;
+		}
+		.lang-menu li,
+		.lang-menu li:first-child,
+		.lang-menu li:last-child {
+			padding: 0;
+			border: 0;
+			border-radius: 0;
+			box-shadow: none;
+			background: none;
+		}
+		.nav .lang-menu a {
 			padding: 8px 14px;
+			font-size: 12px;
+			letter-spacing: 0.1em;
 			border: 1px solid rgba(255, 255, 255, 0.15);
+			border-radius: var(--radius);
+		}
+		.lang-menu .full {
+			display: none;
+		}
+		.lang-menu .short {
+			width: auto;
+			font-size: inherit;
+			color: inherit;
 		}
 	}
 	@media (max-width: 720px) {
