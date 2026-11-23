@@ -1,37 +1,54 @@
 ---
+import { site, telHref } from '../data/site';
+import { getLang, localize, useT } from '../i18n';
+import { getServices } from '../lib/services';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const f = t.footer;
 const year = new Date().getFullYear();
+const services = await getServices(lang);
+const L = (path: string) => localize(path, lang);
 ---
 
 <footer class="footer">
 	<div class="container">
 		<div class="top">
 			<div class="brand">
-				<a href="/" class="logo" aria-label="PerfectWnętrza — strona główna">
+				<a href={L('/')} class="logo" aria-label={t.common.home}>
 					<img src="/logo.webp" alt="PerfectWnętrza" width="615" height="160" loading="lazy" />
 				</a>
-				<p>Wykończenia i remonty wnętrz pod klucz.</p>
+				<p>{f.tagline}</p>
 			</div>
 
-			<nav class="col" aria-label="Stopka">
-				<h4>Nawigacja</h4>
-				<a href="/">Start</a>
-				<a href="/#uslugi">Usługi</a>
-				<a href="/#realizacje">Realizacje</a>
-				<a href="/sprzatanie/">Sprzątanie</a>
-				<a href="/#kontakt">Kontakt</a>
+			<nav class="col" aria-label={f.navAria}>
+				<h4>{f.navTitle}</h4>
+				<a href={L('/')}>{t.common.start}</a>
+				<a href={L('/#uslugi')}>{t.nav.services}</a>
+				<a href={L('/#realizacje')}>{t.nav.projects}</a>
+				<a href={L('/sprzatanie/')}>{t.nav.cleaning}</a>
+				<a href={L('/#kontakt')}>{t.nav.contact}</a>
+			</nav>
+
+			<nav class="col" aria-label={f.servicesTitle}>
+				<h4>{f.servicesTitle}</h4>
+				{services.map((s) => <a href={L(`/uslugi/${s.slug}/`)}>{s.data.name}</a>)}
 			</nav>
 
 			<div class="col">
-				<h4>Kontakt</h4>
-				<a href="tel:+48791567011">+48 791 567 011</a>
-				<a href="mailto:contact@perfectwnetrza.pl">contact@perfectwnetrza.pl</a>
-				<span>Kraków i okolice</span>
+				<h4>{f.contactTitle}</h4>
+				<a href={telHref}>{site.phone}</a>
+				<a href={`mailto:${site.email}`}>{site.email}</a>
+				<span>{t.common.area}</span>
 			</div>
 		</div>
 
 		<div class="bottom">
-			<span>© {year} PerfectWnętrza. Wszelkie prawa zastrzeżone.</span>
-			<a href="#top">Do góry ↑</a>
+			<span>© {year} PerfectWnętrza. {f.rights}</span>
+			<span class="links">
+				<a href={L('/polityka-prywatnosci/')}>{f.privacy}</a>
+				<a href="#top">{f.top}</a>
+			</span>
 		</div>
 	</div>
 </footer>
@@ -45,7 +62,7 @@ const year = new Date().getFullYear();
 	}
 	.top {
 		display: grid;
-		grid-template-columns: 2fr 1fr 1fr;
+		grid-template-columns: 1.6fr 1fr 1.2fr 1.2fr;
 		gap: 48px;
 		padding-bottom: 56px;
 		border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -83,6 +100,10 @@ const year = new Date().getFullYear();
 	.col a:hover,
 	.bottom a:hover {
 		color: var(--cream);
+	}
+	.links {
+		display: flex;
+		gap: 24px;
 	}
 	.bottom {
 		display: flex;

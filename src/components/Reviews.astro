@@ -1,0 +1,106 @@
+---
+// "Opinie klientów" — real reviews from src/data/reviews.ts. Hidden while there are none.
+import { reviews, type Review } from '../data/reviews';
+import { site } from '../data/site';
+import { getLang, useT } from '../i18n';
+
+const t = useT(getLang(Astro.url)).reviews;
+
+interface Props {
+	topic?: Review['topic'];
+}
+
+const { topic } = Astro.props;
+const list = reviews.filter((r) => !topic || !r.topic || r.topic === topic);
+---
+
+{
+	list.length > 0 && (
+		<section class="section reviews">
+			<div class="container">
+				<div class="head">
+					<div>
+						<span class="eyebrow">{t.eyebrow}</span>
+						<h2 class="section-title">{t.title}</h2>
+					</div>
+					{site.googleReviewUrl && (
+						<a href={site.googleReviewUrl} class="btn btn-ghost" target="_blank" rel="noopener">
+							{t.google}
+						</a>
+					)}
+				</div>
+				<ul class="list">
+					{list.map((r) => (
+						<li>
+							{r.rating && (
+								<span class="stars" aria-label={t.rating.replace('{n}', String(r.rating))}>
+									{'★'.repeat(r.rating)}
+									<span class="off">{'★'.repeat(5 - r.rating)}</span>
+								</span>
+							)}
+							<blockquote>{r.text}</blockquote>
+							<p class="who">
+								<strong>{r.name}</strong>
+								{(r.service || r.source) && <span>{[r.service, r.source].filter(Boolean).join(' · ')}</span>}
+							</p>
+						</li>
+					))}
+				</ul>
+			</div>
+		</section>
+	)
+}
+
+<style>
+	.reviews {
+		background: var(--surface);
+	}
+	.head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 24px;
+		flex-wrap: wrap;
+		margin-bottom: 56px;
+	}
+	.list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 24px;
+	}
+	.list li {
+		display: flex;
+		flex-direction: column;
+		gap: 18px;
+		padding: 32px 30px;
+		background: var(--bg);
+		border-top: 3px solid var(--accent);
+	}
+	.stars {
+		color: var(--accent);
+		letter-spacing: 0.12em;
+	}
+	.stars .off {
+		color: var(--line);
+	}
+	blockquote {
+		margin: 0;
+		flex: 1;
+		font-size: 16px;
+		line-height: 1.65;
+	}
+	.who {
+		display: flex;
+		flex-direction: column;
+		font-size: 14px;
+	}
+	.who strong {
+		font-weight: 500;
+	}
+	.who span {
+		color: var(--muted);
+	}
+</style>

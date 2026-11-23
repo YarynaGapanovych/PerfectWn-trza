@@ -1,30 +1,35 @@
+---
+import Stats from './Stats.astro';
+import { getLang, useT } from '../i18n';
+
+const t = useT(getLang(Astro.url)).hero;
+---
+
 <section class="hero">
 	<div class="container hero-grid">
 		<div class="hero-copy">
-			<span class="eyebrow">Wykończenia wnętrz pod klucz</span>
-			<h1>Wnętrza dopracowane <em>w każdym detalu</em></h1>
-			<p class="lead">
-				Remontujemy i wykańczamy mieszkania, domy oraz lokale usługowe.
-				Jeden zespół, jeden harmonogram i pełna odpowiedzialność za efekt.
-			</p>
+			<span class="eyebrow">{t.eyebrow}</span>
+			<h1>{t.title} <em>{t.titleAccent}</em></h1>
+			<p class="lead">{t.lead}</p>
 			<div class="actions">
-				<a href="#kontakt" class="btn btn-primary">Umów konsultację</a>
-				<a href="#uslugi" class="btn btn-ghost">Zobacz usługi</a>
+				<a href="#kontakt" class="btn btn-primary">{t.primary}</a>
+				<a href="#uslugi" class="btn btn-ghost">{t.secondary}</a>
 			</div>
+			<Stats />
 		</div>
 
 		<div class="hero-visual">
 			<img
 				class="flat"
 				src="/flat.svg"
-				alt="Ilustracja mieszkania: salon z jadalnią, sypialnia i łazienka"
+				alt={t.alt}
 				width="779"
 				height="620"
 				fetchpriority="high"
 			/>
 			<div class="badge" aria-hidden="true">
-				<span>Od wyceny</span>
-				<strong>do odbioru kluczy</strong>
+				<span>{t.badgeSmall}</span>
+				<strong>{t.badgeBig}</strong>
 			</div>
 		</div>
 	</div>

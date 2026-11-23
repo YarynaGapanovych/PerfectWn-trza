@@ -4,6 +4,9 @@ category: mieszkanie
 folder: mieszkanie
 featured: true
 order: 5
+translations:
+  en: { title: 'Apartment finishing' }
+  uk: { title: 'Оздоблення квартири' }
 photos:
   - mieszkanie-02.jpg
   - mieszkanie-01.jpg

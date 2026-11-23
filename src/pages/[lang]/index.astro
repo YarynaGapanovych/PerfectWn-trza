@@ -1,0 +1,9 @@
+---
+// English and Ukrainian versions of the home page (/en/, /uk/).
+import HomePage from '../../views/HomePage.astro';
+import { otherLangPaths } from '../../i18n';
+
+export const getStaticPaths = otherLangPaths;
+---
+
+<HomePage />

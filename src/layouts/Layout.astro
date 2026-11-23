@@ -1,26 +1,83 @@
 ---
 import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import CallBar from '../components/CallBar.astro';
+import { site } from '../data/site';
+import { defaultLang, getLang, langLocales, langs, localize, useT } from '../i18n';
+import shareSource from '../assets/portfolio/mieszkanie/mieszkanie-02.jpg';
 
 interface Props {
 	title?: string;
 	description?: string;
+	/** Extra schema.org objects for this page (Service, FAQPage, BreadcrumbList…). */
+	jsonLd?: Record<string, unknown>[];
+	/** Hide the page from search engines (e.g. legal pages). */
+	noindex?: boolean;
 }
 
-const {
-	title = 'PerfectWnętrza — wykończenia i remonty wnętrz',
-	description = 'Kompleksowe wykończenia wnętrz i remonty pod klucz w Krakowie i okolicach.',
-} = Astro.props;
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const { title = t.meta.title, description = t.meta.description, jsonLd = [], noindex = false } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, site.url).href;
+// Same page in every language, for Google (hreflang) and social previews.
+const alternates = langs.map((l) => ({ lang: l, href: new URL(localize(Astro.url.pathname, l), site.url).href }));
+const homePaths = langs.map((l) => localize('/', l));
+const share = await getImage({ src: shareSource, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const shareUrl = new URL(share.src, site.url).href;
+
+// The business itself, on every page: helps Google show name, phone, area and hours.
+const business = {
+	'@context': 'https://schema.org',
+	'@type': 'HomeAndConstructionBusiness',
+	'@id': `${site.url}/#business`,
+	name: site.name,
+	url: `${site.url}/`,
+	logo: `${site.url}/icon-512.png`,
+	image: shareUrl,
+	telephone: site.phone.replace(/\s/g, ''),
+	email: site.email,
+	areaServed: { '@type': 'City', name: site.city },
+	address: { '@type': 'PostalAddress', addressLocality: site.city, addressCountry: 'PL' },
+	openingHoursSpecification: {
+		'@type': 'OpeningHoursSpecification',
+		dayOfWeek: site.openingHours.days,
+		opens: site.openingHours.opens,
+		closes: site.openingHours.closes,
+	},
+	...(site.profiles.length ? { sameAs: site.profiles } : {}),
+};
+const schemas = [business, ...jsonLd];
 ---
 
 <!doctype html>
-<html lang="pl">
+<html lang={lang}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>{title}</title>
 		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		{alternates.map((a) => <link rel="alternate" hreflang={a.lang} href={a.href} />)}
+		<link rel="alternate" hreflang="x-default" href={alternates.find((a) => a.lang === defaultLang)!.href} />
+		{noindex && <meta name="robots" content="noindex" />}
+
+		<meta property="og:type" content="website" />
+		<meta property="og:locale" content={langLocales[lang]} />
+		{langs.filter((l) => l !== lang).map((l) => <meta property="og:locale:alternate" content={langLocales[l]} />)}
+		<meta property="og:site_name" content={site.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:image" content={shareUrl} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
+
 		<link rel="icon" href="/favicon.ico" sizes="any" />
 		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
 		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+		<link rel="sitemap" href="/sitemap.xml" />
 		<meta name="theme-color" content="#2b2b2b" />
 		<meta name="generator" content={Astro.generator} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -29,15 +86,24 @@ const {
 			href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500&family=Inter:wght@300;400;500&display=swap"
 			rel="stylesheet"
 		/>
-		<title>{title}</title>
+		{schemas.map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} />)}
+		{
+			site.plausibleDomain && (
+				<script is:inline defer data-domain={site.plausibleDomain} src="https://plausible.io/js/script.tagged-events.js" />
+			)
+		}
 	</head>
-	<body id="top">
+	<body id="top" data-home-paths={homePaths.join(' ')}>
 		<slot />
+		<CallBar />
 		<script>
 			// "Do góry" and logo links: always scroll to the very top, even when
 			// the address already ends in #top (a plain anchor would do nothing then).
-			// On the home page, links to "/" (logo, "Start") do the same instead of reloading.
-			const topLinks = location.pathname === '/' ? 'a[href="#top"], a[href="/"]' : 'a[href="#top"]';
+			// On the home page, links to it (logo, "Start") do the same instead of reloading.
+			const homes = (document.body.dataset.homePaths ?? '/').split(' ');
+			const topLinks = homes.includes(location.pathname)
+				? ['a[href="#top"]', `a[href="${location.pathname}"]`].join(', ')
+				: 'a[href="#top"]';
 			document.querySelectorAll<HTMLAnchorElement>(topLinks).forEach((link) =>
 				link.addEventListener('click', (event) => {
 					event.preventDefault();
@@ -45,6 +111,17 @@ const {
 					history.replaceState(null, '', location.pathname + location.search);
 				}),
 			);
+
+			// Analytics events: phone and WhatsApp clicks anywhere on the page.
+			// Form sends are reported by the contact form itself. Does nothing without analytics.
+			type Plausible = (event: string, options?: { props?: Record<string, string> }) => void;
+			const track = (event: string) => (window as unknown as { plausible?: Plausible }).plausible?.(event, { props: { page: location.pathname } });
+			document.addEventListener('click', (event) => {
+				const link = (event.target as Element | null)?.closest?.('a[href]');
+				const href = link?.getAttribute('href') ?? '';
+				if (href.startsWith('tel:')) track('Telefon');
+				else if (href.startsWith('https://wa.me/')) track('WhatsApp');
+			});
 		</script>
 	</body>
 </html>

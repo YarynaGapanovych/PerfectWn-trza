@@ -1,0 +1,185 @@
+---
+// Two-column hero for subpages (cleaning, service pages): copy on the left, isometric illustration on the right.
+import Stats from './Stats.astro';
+import { getLang, useT } from '../i18n';
+
+const t = useT(getLang(Astro.url));
+
+interface Props {
+	eyebrow: string;
+	/** Main heading; `titleAccent` follows it in bronze. */
+	title: string;
+	titleAccent?: string;
+	lead: string;
+	image: string;
+	alt: string;
+	badge?: { small: string; big: string };
+	primary?: { href: string; label: string };
+	secondary?: { href: string; label: string };
+	/** Breadcrumb trail shown above the eyebrow, e.g. [{ href: '/', label: 'Start' }]. */
+	crumbs?: { href: string; label: string }[];
+}
+
+const {
+	eyebrow,
+	title,
+	titleAccent,
+	lead,
+	image,
+	alt,
+	badge,
+	primary = { href: '#kontakt', label: t.common.freeQuote },
+	secondary,
+	crumbs,
+} = Astro.props;
+---
+
+<section class="hero">
+	<div class="container hero-grid">
+		<div class="hero-copy">
+			{
+				crumbs && (
+					<nav class="crumbs" aria-label={t.common.breadcrumbs}>
+						{crumbs.map((c) => (
+							<>
+								<a href={c.href}>{c.label}</a>
+								<span aria-hidden="true">/</span>
+							</>
+						))}
+						<span aria-current="page">{eyebrow}</span>
+					</nav>
+				)
+			}
+			{!crumbs && <span class="eyebrow">{eyebrow}</span>}
+			<h1>{title}{titleAccent && <> <em>{titleAccent}</em></>}</h1>
+			<p class="lead">{lead}</p>
+			<div class="actions">
+				<a href={primary.href} class="btn btn-primary">{primary.label}</a>
+				{secondary && <a href={secondary.href} class="btn btn-ghost">{secondary.label}</a>}
+			</div>
+			<Stats />
+		</div>
+
+		<div class="hero-visual">
+			<img class="flat" src={image} alt={alt} width="779" height="620" fetchpriority="high" />
+			{
+				badge && (
+					<div class="badge" aria-hidden="true">
+						<span>{badge.small}</span>
+						<strong>{badge.big}</strong>
+					</div>
+				)
+			}
+		</div>
+	</div>
+</section>
+
+<style>
+	.hero {
+		padding: 72px 0 112px;
+		overflow: hidden;
+	}
+	.hero-grid {
+		display: grid;
+		grid-template-columns: 1.05fr 1fr;
+		gap: 64px;
+		align-items: center;
+	}
+	.crumbs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 16px;
+		font-size: 12px;
+		font-weight: 500;
+		letter-spacing: 0.2em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.crumbs a {
+		text-decoration: none;
+	}
+	.crumbs a:hover {
+		color: var(--ink);
+	}
+	.crumbs [aria-current] {
+		color: var(--accent);
+	}
+	h1 {
+		font-size: clamp(36px, 5vw, 60px);
+		letter-spacing: -0.015em;
+	}
+	h1 em {
+		color: var(--accent);
+		font-style: normal;
+		font-weight: 400;
+	}
+	.lead {
+		margin-top: 28px;
+		max-width: 520px;
+		font-size: 18px;
+		color: var(--muted);
+		font-weight: 300;
+	}
+	.actions {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 14px;
+		margin-top: 40px;
+	}
+	.hero-visual {
+		position: relative;
+	}
+	.flat {
+		width: 112%;
+		max-width: none;
+		height: auto;
+		margin-left: -4%;
+	}
+	.badge {
+		position: absolute;
+		left: 0;
+		bottom: 2%;
+		background: var(--surface);
+		padding: 20px 26px;
+		box-shadow: 0 18px 40px rgba(31, 27, 23, 0.12);
+		border-radius: var(--radius);
+		display: flex;
+		flex-direction: column;
+	}
+	.badge span {
+		font-size: 12px;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+	.badge strong {
+		font-family: var(--font-serif);
+		font-size: 18px;
+		font-weight: 400;
+	}
+
+	@media (max-width: 900px) {
+		.hero-grid {
+			grid-template-columns: 1fr;
+			gap: 48px;
+		}
+		.flat {
+			width: 100%;
+			margin-left: 0;
+		}
+		.badge {
+			position: static;
+			display: inline-flex;
+			margin-top: 8px;
+		}
+	}
+	@media (max-width: 600px) {
+		.hero {
+			padding: 40px 0 80px;
+		}
+		.badge {
+			padding: 14px 18px;
+		}
+	}
+</style>

@@ -4,6 +4,9 @@ category: łazienka
 folder: lazienka-1
 featured: false
 order: 6
+translations:
+  en: { title: 'Bathroom' }
+  uk: { title: 'Ванна кімната' }
 draft: true
 photos:
   - lazienka-1-08.jpg

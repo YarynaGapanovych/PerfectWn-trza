@@ -1,0 +1,81 @@
+---
+// Phone-only bar fixed to the bottom of the screen: one tap to call, message or ask for a quote.
+import { telHref, whatsappHref } from '../data/site';
+import { getLang, localize, useT } from '../i18n';
+
+const lang = getLang(Astro.url);
+const t = useT(lang);
+
+// Pages with their own contact form scroll to it; others go to the home page form.
+const formHref = '#kontakt';
+---
+
+<nav class="callbar" aria-label={t.callbar.aria} data-home-form={localize('/#kontakt', lang)}>
+	<a href={telHref} class="call">
+		<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2" /></svg>
+		{t.callbar.call}
+	</a>
+	{
+		whatsappHref && (
+			<a href={whatsappHref} class="wa" target="_blank" rel="noopener">
+				<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 20.5l1.3-4A8.5 8.5 0 1 1 8 19.6Z" /><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2Z" /></svg>
+				WhatsApp
+			</a>
+		)
+	}
+	<a href={formHref} class="quote" data-quote-link>{t.common.freeQuote}</a>
+</nav>
+
+<script>
+	// No form on this page (e.g. a project page): send "Bezpłatna wycena" to the home page form.
+	if (!document.getElementById('kontakt')) {
+		const home = document.querySelector<HTMLElement>('.callbar')?.dataset.homeForm ?? '/#kontakt';
+		document.querySelectorAll<HTMLAnchorElement>('[data-quote-link]').forEach((a) => (a.href = home));
+	}
+</script>
+
+<style>
+	.callbar {
+		display: none;
+	}
+	@media (max-width: 720px) {
+		.callbar {
+			position: fixed;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			z-index: 60;
+			display: flex;
+			gap: 8px;
+			padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+			background: var(--charcoal);
+			box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.18);
+		}
+		.callbar a {
+			flex: 1;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			min-height: 46px;
+			padding: 0 10px;
+			font-size: 13px;
+			font-weight: 500;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			text-decoration: none;
+			color: var(--ivory);
+			border: 1px solid rgba(255, 255, 255, 0.25);
+			border-radius: var(--radius);
+		}
+		.callbar .quote {
+			background: var(--accent);
+			border-color: var(--accent);
+			color: #fff;
+		}
+		/* Keep the footer readable above the bar. */
+		:global(body) {
+			padding-bottom: calc(66px + env(safe-area-inset-bottom));
+		}
+	}
+</style>

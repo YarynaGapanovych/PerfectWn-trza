@@ -1,0 +1,185 @@
+---
+// Service landing page, e.g. /uslugi/remont-lazienki/. Content: src/content/services/<lang>/*.md
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import PageHero from '../components/PageHero.astro';
+import Steps from '../components/Steps.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
+import WhyUs from '../components/WhyUs.astro';
+import Reviews from '../components/Reviews.astro';
+import Faq from '../components/Faq.astro';
+import Contact from '../components/Contact.astro';
+import Footer from '../components/Footer.astro';
+import { getProjects } from '../lib/portfolio';
+import { site } from '../data/site';
+import { getLang, localize, useT } from '../i18n';
+import type { ServiceEntry } from '../lib/services';
+
+interface Props {
+	service: ServiceEntry;
+}
+
+const { service } = Astro.props;
+const d = service.data;
+const cleaning = d.kind === 'cleaning';
+const lang = getLang(Astro.url);
+const t = useT(lang);
+const L = (path: string) => localize(path, lang);
+
+const projects = d.projectCategories.length
+	? (await getProjects()).filter((p) => d.projectCategories.includes(p.data.category)).slice(0, 5)
+	: [];
+
+const parent = cleaning ? { href: L('/sprzatanie/'), label: t.nav.cleaning } : { href: L('/#uslugi'), label: t.nav.services };
+const pageUrl = new URL(L(`/uslugi/${service.slug}/`), site.url).href;
+const jsonLd = [
+	{
+		'@context': 'https://schema.org',
+		'@type': 'Service',
+		name: d.name,
+		serviceType: d.name,
+		description: d.description,
+		url: pageUrl,
+		areaServed: { '@type': 'City', name: site.city },
+		provider: { '@id': `${site.url}/#business` },
+	},
+	{
+		'@context': 'https://schema.org',
+		'@type': 'BreadcrumbList',
+		itemListElement: [
+			{ '@type': 'ListItem', position: 1, name: t.common.start, item: new URL(L('/'), site.url).href },
+			{ '@type': 'ListItem', position: 2, name: parent.label, item: new URL(parent.href, site.url).href },
+			{ '@type': 'ListItem', position: 3, name: d.name, item: pageUrl },
+		],
+	},
+];
+---
+
+<Layout title={d.metaTitle} description={d.description} jsonLd={jsonLd}>
+	<Header />
+	<main>
+		<PageHero
+			eyebrow={d.name}
+			title={d.title}
+			titleAccent={d.titleAccent}
+			lead={d.lead}
+			image={d.image}
+			alt={d.imageAlt}
+			badge={d.badge}
+			secondary={{ href: '#zakres', label: t.common.seeScope }}
+			crumbs={[{ href: L('/'), label: t.common.start }, parent]}
+		/>
+
+		<section class="section scope-section" id="zakres">
+			<div class="container scope-grid">
+				<div>
+					<span class="eyebrow">{t.servicePage.scopeEyebrow}</span>
+					<h2 class="section-title">{d.scopeTitle}</h2>
+					<p class="scope-intro">{t.servicePage.scopeIntro}</p>
+				</div>
+				<ul class="scope">
+					{
+						d.scope.map((item) => (
+							<li>
+								<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" /></svg>
+								{item}
+							</li>
+						))
+					}
+				</ul>
+			</div>
+		</section>
+
+		<Steps kind={cleaning ? 'rental' : 'renovation'} />
+
+		{
+			projects.length > 0 && (
+				<section class="section projects">
+					<div class="container">
+						<div class="projects-head">
+							<div>
+								<span class="eyebrow">{t.servicePage.projectsEyebrow}</span>
+								<h2 class="section-title">{t.servicePage.projectsTitle}</h2>
+							</div>
+							<a href={L('/#realizacje')} class="all">{t.servicePage.allProjects}</a>
+						</div>
+						<ProjectGrid projects={projects} />
+					</div>
+				</section>
+			)
+		}
+
+		{!cleaning && <WhyUs />}
+		<Reviews topic={cleaning ? 'cleaning' : 'renovation'} />
+		{d.faq.length > 0 && <Faq items={d.faq} />}
+		<Contact service={d.formService} />
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	.scope-section {
+		background: var(--surface);
+	}
+	.scope-grid {
+		display: grid;
+		grid-template-columns: 1fr 1.4fr;
+		gap: 64px;
+		align-items: start;
+	}
+	.scope-intro {
+		margin-top: 24px;
+		color: var(--muted);
+		font-weight: 300;
+		font-size: 17px;
+		max-width: 420px;
+	}
+	.scope {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0 32px;
+	}
+	.scope li {
+		display: flex;
+		gap: 14px;
+		align-items: flex-start;
+		padding: 18px 0;
+		border-bottom: 1px solid var(--line);
+		font-size: 16px;
+	}
+	.scope svg {
+		flex: none;
+		margin-top: 2px;
+		color: var(--accent);
+	}
+	.projects-head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 24px;
+		flex-wrap: wrap;
+		margin-bottom: 56px;
+	}
+	.all {
+		font-size: 13px;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		text-decoration: none;
+		color: var(--accent-dark);
+	}
+	@media (max-width: 900px) {
+		.scope-grid {
+			grid-template-columns: 1fr;
+			gap: 32px;
+		}
+	}
+	@media (max-width: 600px) {
+		.scope {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

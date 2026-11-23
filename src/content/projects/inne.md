@@ -4,6 +4,9 @@ category: inne
 folder: inne
 featured: false
 order: 12
+translations:
+  en: { title: 'Other projects' }
+  uk: { title: 'Інші роботи' }
 draft: true
 photos:
   - inne-02.jpg

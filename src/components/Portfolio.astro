@@ -1,6 +1,9 @@
 ---
 import ProjectGrid from './ProjectGrid.astro';
 import { getProjects } from '../lib/portfolio';
+import { getLang, useT } from '../i18n';
+
+const t = useT(getLang(Astro.url)).portfolio;
 
 // Every published project is shown here; hide one with `draft: true` in its .md file.
 const projects = await getProjects();
@@ -10,12 +13,10 @@ const projects = await getProjects();
 	<div class="container">
 		<div class="head">
 			<div>
-				<span class="eyebrow">Realizacje</span>
-				<h2 class="section-title">Zobacz, jak<br />pracujemy</h2>
+				<span class="eyebrow">{t.eyebrow}</span>
+				<h2 class="section-title">{t.titleLines[0]}<br />{t.titleLines[1]}</h2>
 			</div>
-			<p>
-				Łazienki, kuchnie, mieszkania i lokale użytkowe — wybrane projekty z naszego portfolio.
-			</p>
+			<p>{t.intro}</p>
 		</div>
 
 		<ProjectGrid projects={projects} />
