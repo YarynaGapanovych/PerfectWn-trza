@@ -27,3 +27,6 @@ pnpm-debug.log*
 portfolio-archive/
 # Original full-size photos (not used by the site; resized copies are in src/assets/portfolio)
 public/portfolio/
+
+# Local e-mail previews (never deploy)
+public/email/_preview*
